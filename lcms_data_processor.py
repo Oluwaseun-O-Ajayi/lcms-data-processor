@@ -189,9 +189,9 @@ class PeakDetector:
         areas = []
         
         for _, peak in self.peaks.iterrows():
-            # Get peak region
-            left = peak['left_base']
-            right = peak['right_base']
+            # Get peak region - CONVERT TO INT
+            left = int(peak['left_base'])
+            right = int(peak['right_base'])
             
             peak_time = self.data['time'].iloc[left:right+1]
             peak_intensity = (self.data['intensity'].iloc[left:right+1] - 
@@ -252,30 +252,34 @@ class PeakDetector:
         
         # Plot 2: Peak metrics
         x_pos = np.arange(len(self.peaks))
-        
+
         ax2_twin = ax2.twinx()
-        
+
         bars1 = ax2.bar(x_pos - 0.2, self.peaks['peak_area'], 
-                       width=0.4, label='Peak Area', 
-                       color='skyblue', edgecolor='black')
+               width=0.4, label='Peak Area', 
+               color='skyblue', edgecolor='black')
         bars2 = ax2_twin.bar(x_pos + 0.2, self.peaks['snr'], 
-                            width=0.4, label='S/N Ratio',
-                            color='coral', edgecolor='black')
-        
-        ax2.set_xlabel('Peak ID', fontsize=11, fontweight='bold')
-        ax2.set_ylabel('Peak Area', fontsize=11, fontweight='bold', color='skyblue')
-        ax2_twin.set_ylabel('S/N Ratio', fontsize=11, fontweight='bold', color='coral')
-        ax2.set_title('Peak Metrics', fontsize=13, fontweight='bold')
+                    width=0.4, label='S/N Ratio',
+                    color='coral', edgecolor='black')
+
+        ax2.set_xlabel('Peak ID', fontsize=11, fontweight='bold', labelpad=10)
+        ax2.set_ylabel('Peak Area', fontsize=11, fontweight='bold', color='skyblue', labelpad=10)
+        ax2_twin.set_ylabel('S/N Ratio', fontsize=11, fontweight='bold', color='coral', labelpad=10)
+        ax2.set_title('Peak Metrics', fontsize=13, fontweight='bold', pad=15)
         ax2.set_xticks(x_pos)
-        ax2.set_xticklabels(self.peaks['peak_id'])
+        ax2.set_xticklabels(self.peaks['peak_id'], fontsize=10)
         ax2.grid(True, alpha=0.3, axis='y')
+
+        # Color the y-axis labels to match the bars
+        ax2.tick_params(axis='y', labelcolor='skyblue', labelsize=10)
+        ax2_twin.tick_params(axis='y', labelcolor='coral', labelsize=10)
         
         # Combine legends
         lines1, labels1 = ax2.get_legend_handles_labels()
         lines2, labels2 = ax2_twin.get_legend_handles_labels()
-        ax2.legend(lines1 + lines2, labels1 + labels2, loc='upper right')
+        ax2.legend(lines1 + lines2, labels1 + labels2, loc='upper right', fontsize=10)
         
-        plt.tight_layout()
+        plt.tight_layout(pad=2.0)
         
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
