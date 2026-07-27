@@ -1,4 +1,4 @@
-# LC-MS Data Processing Pipeline 📊
+# LC-MS Data Processing Pipeline
 
 Open-source Python toolkit for reproducible LC-MS chromatogram processing, peak integration, calibration, quantification, and quality-control analysis
 
