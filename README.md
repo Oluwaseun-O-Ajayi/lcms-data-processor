@@ -1,33 +1,78 @@
 # LC-MS Data Processing Pipeline 📊
 
-A comprehensive Python toolkit for processing liquid chromatography-mass spectrometry (LC-MS) data. Designed for pharmaceutical, bioanalytical, and clinical chemistry laboratories.
+Open-source Python toolkit for reproducible LC-MS chromatogram processing, peak integration, calibration, quantification, and quality-control analysis
+
+The framework provides chromatogram visualization, baseline correction, peak detection, numerical integration, calibration-curve modeling, sample quantification, quality-control reporting, and publication-quality figure generation for analytical chemistry, bioanalysis, and laboratory research workflows
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🎯 Overview
+## Overview
 
-This toolkit automates LC-MS data analysis workflows with publication-quality visualizations, focusing on:
+LC-MS Data Processor is a reproducible computational workflow for chromatogram analysis using exported time–intensity data
 
-- **Chromatogram Processing** - Import and visualize retention time vs. intensity data
-- **Peak Detection & Integration** - Automated peak finding with baseline correction
-- **Calibration Curves** - Linear regression with R² calculation
-- **Quantification** - Calculate analyte concentrations from peak areas
-- **Quality Control** - S/N ratio, peak shape, resolution metrics
-- **Batch Processing** - Handle multiple samples efficiently
+The software integrates:
 
-## ✨ Features
+- **Chromatogram visualization**
+- **Baseline estimation**
+- **Automated peak detection**
+- **Peak integration**
+- **Signal-to-noise calculation**
+- **Calibration-curve modeling**
+- **Sample quantification**
+- **Quality-control assessment**
+- **Automated reporting**
 
-- 📈 **Automated peak detection** - Uses scipy's signal processing algorithms
-- 📊 **Baseline correction** - Rolling minimum baseline estimation
-- 🎯 **Peak integration** - Trapezoidal integration for accurate peak areas
-- 📉 **Calibration curves** - Linear regression with goodness-of-fit metrics
-- 🔍 **Quality metrics** - S/N ratio, peak asymmetry, resolution
-- 🚀 **Batch processing** - Analyze multiple samples in sequence
-- 📁 **Report generation** - Automated QC reports and summary tables
-- 🎨 **Publication-quality plots** - High-resolution figures for papers
+The framework is intended for educational, academic, industrial, and analytical chemistry environments where transparent and reproducible chromatogram-processing workflows are required
 
-## 🚀 Quick Start
+## Scope and Intended Use
+
+This repository provides computational workflows for LC-MS chromatogram processing and quantitative data analysis
+
+Implemented capabilities include:
+
+- **Peak detection**
+- **Peak integration**
+- **Calibration modeling**
+- **Quantification**
+- **Quality-control assessment**
+- **Reporting**
+
+The software operates on exported chromatogram data and is intended for research, education, workflow development, and reproducibility-focused applications
+
+Users are responsible for validating analytical methods, calibration strategies, integration settings, and quality-control criteria before applying results to regulated or decision-critical workflows
+
+## Scientific Software Contribution
+
+The primary contribution of this repository is a reusable software workflow for chromatogram-based LC-MS analysis
+
+Implemented capabilities include:
+
+- **Chromatogram parsing**
+- **Baseline correction**
+- **Automated peak detection**
+- **Trapezoidal peak integration**
+- **Signal-to-noise analysis**
+- **Calibration-curve fitting**
+- **Concentration prediction**
+- **Peak-shape assessment**
+- **Peak-resolution assessment**
+- **Automated report generation**
+
+The framework is designed to improve accessibility and reproducibility of LC-MS data analysis workflows
+
+## Features
+
+-  **Automated peak detection** - Uses scipy's signal processing algorithms
+-  **Baseline correction** - Rolling minimum baseline estimation
+-  **Peak integration** - Trapezoidal integration for accurate peak areas
+-  **Calibration curves** - Linear regression with goodness-of-fit metrics
+-  **Quality metrics** - S/N ratio, peak asymmetry, resolution
+-  **Batch processing** - Analyze multiple samples in sequence
+-  **Report generation** - Automated QC reports and summary tables
+-  **Publication-quality plots** - High-resolution figures for papers
+
+## Quick Start
 
 ### Installation
 
@@ -57,7 +102,7 @@ This will:
 - Perform quality control checks
 - Generate all plots and reports
 
-## 📋 Requirements
+## Requirements
 
 - Python 3.8+
 - numpy >= 1.23.0
@@ -66,7 +111,7 @@ This will:
 - seaborn >= 0.12.0
 - scipy >= 1.9.0
 
-## 📊 Data Format
+## Data Format
 
 Input CSV files should have two columns:
 
@@ -81,7 +126,20 @@ time,intensity
 - **time**: Retention time in minutes
 - **intensity**: Signal intensity in arbitrary units (AU)
 
-## 💻 Available Modules
+## Example Data
+
+The repository includes synthetic chromatogram datasets generated from Gaussian peaks, baseline signal, and controlled noise
+
+These datasets are provided for:
+
+- **Software testing**
+- **Workflow demonstrations**
+- **Educational purposes**
+- **Reproducibility examples**
+
+Example chromatograms should not be interpreted as validated experimental LC-MS measurements
+
+## Available Modules
 
 ### 1. ChromatogramParser
 
@@ -217,7 +275,7 @@ print(f"Detected {len(results['peaks'])} peaks")
 print(results['peaks'])
 ```
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 lcms-data-processor/
@@ -238,7 +296,7 @@ lcms-data-processor/
     └── README.md
 ```
 
-## 🔬 Example Workflows
+## Example Workflows
 
 ### Workflow 1: Single Sample Analysis
 
@@ -325,7 +383,8 @@ summary.to_csv('batch_results/summary.csv', index=False)
 print(summary)
 ```
 
-## 🎯 Real-World Applications
+## Research Applications
+The examples included in this repository demonstrate workflow capabilities and are not intended to substitute for laboratory-specific method validation requirements
 
 ### Pharmaceutical Analysis
 - **Drug quantification** - Measure API concentrations in formulations
@@ -349,7 +408,7 @@ print(summary)
 - **Water quality testing** - PFAS, pharmaceuticals in water
 - **Food safety** - Residue analysis
 
-## 🛠️ Customization
+## Customization
 
 ### Adjust Peak Detection Sensitivity
 
@@ -379,7 +438,7 @@ plt.rcParams['figure.dpi'] = 600
 detector.plot_detected_peaks(save_path='high_res_peaks.png')
 ```
 
-## 📈 Quality Metrics Guide
+## Quality Metrics Guide
 
 ### Signal-to-Noise Ratio (S/N)
 - **S/N > 10**: Excellent signal
@@ -396,7 +455,7 @@ detector.plot_detected_peaks(save_path='high_res_peaks.png')
 - **Rs 1.0-1.5**: Partial separation
 - **Rs < 1.0**: Poor separation (co-elution risk)
 
-## ⚠️ Troubleshooting
+## Troubleshooting
 
 ### No Peaks Detected
 - Lower `prominence` parameter
@@ -413,7 +472,7 @@ detector.plot_detected_peaks(save_path='high_res_peaks.png')
 - Verify concentration range is appropriate
 - Ensure peak integration is consistent
 
-## 🔄 Integration with Other Tools
+## Integration with Other Tools
 
 Works well with:
 - **Thermo Xcalibur** - Export chromatograms as CSV
@@ -421,7 +480,22 @@ Works well with:
 - **Waters Empower** - Export results to CSV format
 - **Python ecosystem** - Combine with pandas, scikit-learn
 
-## 🤝 Contributing
+## Validation and Interpretation
+
+Model outputs should be interpreted alongside analytical method validation and experimental quality considerations
+
+Recommended practices include:
+
+- **Visual inspection of chromatograms**
+- **Review of integration boundaries**
+- **Verification of calibration performance**
+- **Assessment of signal-to-noise ratios**
+- **Evaluation of peak-shape metrics**
+- **Confirmation of peak resolution**
+
+Software outputs should support, not replace, analytical judgment
+
+## Contributing
 
 Contributions welcome! Areas for enhancement:
 - Advanced baseline algorithms (e.g., asymmetric least squares)
@@ -430,17 +504,17 @@ Contributions welcome! Areas for enhancement:
 - Integration with vendor software APIs
 - Support for additional file formats (mzML, mzXML)
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - Developed for pharmaceutical and bioanalytical chemistry research
 - Inspired by industry-standard HPLC/LC-MS software
 - Thanks to scipy and the scientific Python community
 
-## 📧 Contact
+## Contact
 
 **Oluwaseun O. Ajayi**  
 PhD Researcher, Chemistry  
@@ -450,7 +524,17 @@ University of Georgia
 - **Academic Email**: oluwaseun.ajayi@uga.edu
 - **Personal Email**: seunolanikeajayi@gmail.com
 
-## 📖 Citation
+## Publication
+
+Associated manuscript:
+
+Ajayi OO.
+
+LC-MS Data Processor: An Open-Source Python Workflow for Chromatogram Processing, Peak Integration, Calibration, and Quality-Control Reporting
+
+Manuscript in preparation
+
+## Citation
 
 If you use this toolkit in your research:
 
@@ -465,4 +549,4 @@ If you use this toolkit in your research:
 
 ---
 
-**Made with ❤️ for analytical chemistry and pharmaceutical research**
+**Advancing reproducible LC-MS data analysis through open scientific software**
