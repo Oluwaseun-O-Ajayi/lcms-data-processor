@@ -528,7 +528,7 @@ University of Georgia
 
 Associated manuscript:
 
-Ajayi OO.
+Ajayi, O. O.
 
 LC-MS Data Processor: An Open-Source Python Workflow for Chromatogram Processing, Peak Integration, Calibration, and Quality-Control Reporting
 
@@ -536,15 +536,23 @@ Manuscript in preparation
 
 ## Citation
 
-If you use this toolkit in your research:
+If you use this software, please cite:
 
 ```bibtex
-@software{lcms_data_processor,
-  author = {Oluwaseun O. Ajayi},
-  title = {LC-MS Data Processing Pipeline},
-  year = {2024},
-  url = {https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor}
+@software{ajayi2026lcms,
+  author = {Ajayi, Oluwaseun O.},
+  title = {LC-MS Data Processor},
+  version = {1.0.0},
+  year = {2026},
+  publisher = {Zenodo},
+  doi = {10.5281/zenodo.21652569},
+  url = {https://doi.org/10.5281/zenodo.21652569}
 }
+```
+
+### APA Style
+
+Ajayi, O. O. (2026). *LC-MS Data Processor* (Version 1.0.0). Zenodo. https://doi.org/10.5281/zenodo.21652569
 ```
 
 ---
