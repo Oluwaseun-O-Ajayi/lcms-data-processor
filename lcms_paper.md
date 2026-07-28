@@ -12,12 +12,12 @@ tags:
   - reproducible research
 authors:
   - name: Oluwaseun O. Ajayi
-    orcid: PUT-ORCID-HERE
+    orcid: 0000-0003-0040-7217
     affiliation: 1
 affiliations:
  - name: Department of Chemistry, University of Georgia, Athens, Georgia, USA
    index: 1
-date: 2026-XX-XX
+date: 2026-07-28
 bibliography: paper.bib
 ---
 
