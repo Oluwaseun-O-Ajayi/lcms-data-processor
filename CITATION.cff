@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+
+title: "LC-MS Data Processor"
+
+authors:
+  - family-names: "Ajayi"
+    given-names: "Oluwaseun O."
+    email: "oluwaseun.ajayi@uga.edu"
+    affiliation: "University of Georgia"
+    orcid: "https://orcid.org/0000-0003-0040-7217"
+
+version: "1.0.0"
+doi: "10.5281/zenodo.21652569"
+date-released: "2026-07-28"
+
+url: "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"
+repository-code: "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"
+
+license: "MIT"
+
+keywords:
+  - lc-ms
+  - liquid-chromatography
+  - mass-spectrometry
+  - chromatogram-processing
+  - peak-detection
+  - analytical-chemistry
+  - bioanalytical-chemistry
+  - reproducible-research
+  - python
+
+abstract: >
+  LC-MS Data Processor is an open-source Python workflow
+  for chromatogram processing, peak integration,
+  calibration-curve fitting, quantification,
+  and quality-control reporting. The software
+  provides a reproducible framework for LC-MS
+  data analysis using exported time-intensity
+  chromatogram data and includes visualization,
+  reporting, and educational workflow examples.
