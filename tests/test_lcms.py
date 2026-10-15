@@ -112,7 +112,7 @@ def test_parser_validates_columns(tmp_path):
 @pytest.mark.parametrize("script", ["generate_sample_data.py", "examples/basic_analysis.py",
                                     "examples/calibration_workflow.py"])
 def test_scripts_run(script, tmp_path):
-    env = dict(os.environ, MPLBACKEND="Agg")
+    env = dict(os.environ, MPLBACKEND="Agg", PYTHONIOENCODING="utf-8")
     proc = subprocess.run([sys.executable, str(ROOT / script)], cwd=tmp_path, env=env,
                           capture_output=True, text=True, timeout=300)
     assert proc.returncode == 0, proc.stderr[-2000:]
