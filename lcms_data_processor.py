@@ -2,9 +2,10 @@
 LC-MS Data Processing Pipeline
 ===============================
 
-A comprehensive Python toolkit for processing liquid chromatography-mass 
-spectrometry (LC-MS) data. Designed for pharmaceutical, bioanalytical, and 
-clinical chemistry laboratories.
+A Python toolkit for processing chromatograms exported from liquid
+chromatography-mass spectrometry (LC-MS) instruments as time-intensity CSV
+files: baseline estimation, peak detection and integration, signal-to-noise,
+peak-shape and resolution checks, and linear calibration.
 
 Features:
 - Chromatogram data import and visualization
@@ -21,16 +22,8 @@ Institution: University of Georgia
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 from scipy import signal, integrate
-from scipy.optimize import curve_fit
 from pathlib import Path
-import warnings
-warnings.filterwarnings('ignore')
-
-# Set publication-quality style
-plt.style.use('seaborn-v0_8-whitegrid')
-sns.set_palette("husl")
 
 
 class ChromatogramParser:
@@ -109,7 +102,7 @@ class ChromatogramParser:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
             print(f"✅ Chromatogram plot saved to: {save_path}")
         
-        plt.show()
+        plt.close(fig)
 
 
 class PeakDetector:
@@ -128,96 +121,140 @@ class PeakDetector:
         self.peaks = None
         self.baseline = None
     
-    def detect_peaks(self, prominence=0.1, width=5, height=None):
+    def detect_peaks(self, prominence=0.1, width=5, height=None, baseline_window=0.1,
+                     limit_halfwidths=3.4):
         """
-        Detect peaks using scipy's find_peaks.
-        
+        Detect peaks with scipy.signal.find_peaks on the baseline-corrected trace.
+
         Args:
-            prominence: Minimum peak prominence (relative to max intensity)
-            width: Minimum peak width in data points
-            height: Minimum peak height (absolute)
+            prominence: minimum prominence as a fraction of the largest corrected intensity
+                (never below three noise standard deviations)
+            width: minimum peak width in data points
+            height: minimum corrected height (absolute); default is the larger of 5% of the
+                largest corrected intensity and three noise standard deviations
+            baseline_window: baseline window as a fraction of the number of points
+
+        Each peak records its apex index, retention time, height, full width at half
+        maximum (FWHM, in time units) and the integration limits. Each limit lies
+        `limit_halfwidths` half-widths at half maximum from the apex on its own side
+        (3.4 half-widths correspond to four standard deviations of a Gaussian peak), so
+        tailing is followed on the trailing side. Limits never cross the valley between
+        two neighbouring detected peaks.
         """
-        # Calculate baseline
-        self.baseline = self._estimate_baseline()
-        
-        # Subtract baseline
-        corrected_intensity = self.data['intensity'] - self.baseline
-        
-        # Set height threshold if not provided
+        self.baseline = self._estimate_baseline(baseline_window)
+        corrected = (self.data['intensity'] - self.baseline).to_numpy()
+        self.noise_sd = self._estimate_noise(corrected)
+
+        # Detection and widths use a Savitzky-Golay smoothed trace (window 2*width+1
+        # points, quadratic) so that noise spikes do not split peaks or shrink widths;
+        # heights and areas are taken from the unsmoothed corrected trace.
+        window = 2 * int(width) + 1
+        smooth = signal.savgol_filter(corrected, window, 2) if len(corrected) > window else corrected
         if height is None:
-            height = corrected_intensity.max() * 0.05  # 5% of max
-        
-        # Detect peaks
-        peak_indices, properties = signal.find_peaks(
-            corrected_intensity,
-            prominence=prominence * corrected_intensity.max(),
-            width=width,
-            height=height
-        )
-        
-        # Extract peak information
-        peaks_data = []
-        for i, idx in enumerate(peak_indices):
-            peak_info = {
+            height = max(0.05 * smooth.max(), 3.0 * self.noise_sd)
+        idx, props = signal.find_peaks(smooth, prominence=max(prominence * smooth.max(), 3.0 * self.noise_sd),
+                                       width=width, height=height)
+        half = signal.peak_widths(smooth, idx, rel_height=0.5)
+        t = self.data['time'].to_numpy()
+        dt = float(np.median(np.diff(t))) if len(t) > 1 else 1.0
+
+        rows = []
+        n = len(smooth)
+        for i, apex in enumerate(idx):
+            # Limits never cross the valley between neighbouring detected peaks.
+            lo = int(idx[i - 1] + np.argmin(smooth[idx[i - 1]:apex])) if i > 0 else 0
+            hi = int(apex + np.argmin(smooth[apex:idx[i + 1] + 1])) if i < len(idx) - 1 else n - 1
+            hw_left, hw_right = apex - half[2][i], half[3][i] - apex
+            left = max(lo, int(np.floor(apex - limit_halfwidths * hw_left)))
+            right = min(hi, int(np.ceil(apex + limit_halfwidths * hw_right)))
+            rows.append({
                 'peak_id': i + 1,
-                'retention_time': self.data['time'].iloc[idx],
-                'peak_height': corrected_intensity.iloc[idx],
-                'prominence': properties['prominences'][i],
-                'width': properties['widths'][i],
-                'left_base': int(properties['left_bases'][i]),
-                'right_base': int(properties['right_bases'][i])
-            }
-            peaks_data.append(peak_info)
-        
-        self.peaks = pd.DataFrame(peaks_data)
-        
+                'apex_index': int(apex),
+                'retention_time': float(t[apex]),
+                'peak_height': float(smooth[apex]),
+                'prominence': float(props['prominences'][i]),
+                'width': float(half[0][i]),            # FWHM in data points
+                'fwhm': float(half[0][i] * dt),        # FWHM in time units
+                'left_base': left,
+                'right_base': right,
+            })
+        self.peaks = pd.DataFrame(rows, columns=['peak_id', 'apex_index', 'retention_time', 'peak_height',
+                                                 'prominence', 'width', 'fwhm', 'left_base', 'right_base'])
+
+        # Second pass: re-estimate the baseline from the points outside the peak windows
+        # (rolling median, linear interpolation across the windows). This keeps broad
+        # peaks from lifting the baseline estimate underneath themselves.
+        if len(self.peaks):
+            y = self.data['intensity'].to_numpy(dtype=float)
+            mask = np.ones(n, dtype=bool)
+            for p in self.peaks.itertuples():
+                mask[int(p.left_base):int(p.right_base) + 1] = False
+            if mask.sum() >= 2:
+                outside = pd.Series(np.where(mask, y, np.nan))
+                med = outside.rolling(window, center=True, min_periods=1).median().to_numpy()
+                ok = mask & np.isfinite(med)
+                base2 = np.interp(np.arange(n), np.flatnonzero(ok), med[ok])
+                self.baseline = pd.Series(base2, index=self.data.index)
+                corrected = y - base2
+                smooth = signal.savgol_filter(corrected, window, 2) if n > window else corrected
+                self.peaks['peak_height'] = [float(smooth[a]) for a in self.peaks['apex_index']]
         return self.peaks
-    
-    def _estimate_baseline(self):
-        """Estimate baseline using rolling minimum."""
-        window = int(len(self.data) * 0.1)  # 10% of data points
-        baseline = self.data['intensity'].rolling(
-            window=window, center=True, min_periods=1
-        ).min()
-        return baseline
-    
+
+    def _estimate_baseline(self, window_fraction=0.1):
+        """
+        Baseline by morphological opening (rolling minimum followed by rolling maximum)
+        over a window of window_fraction of the points, smoothed with a rolling mean.
+
+        An opening follows the lower envelope of the noise, so it lies below the true
+        baseline by roughly two to three noise standard deviations. The offset is
+        corrected by adding the median of (intensity - opening) over points that are
+        within the noise band, which removes the positive area bias that a plain
+        rolling minimum produces.
+        """
+        y = self.data['intensity']
+        window = max(int(len(y) * window_fraction), 3)
+        opening = (y.rolling(window, center=True, min_periods=1).min()
+                    .rolling(window, center=True, min_periods=1).max()
+                    .rolling(window, center=True, min_periods=1).mean())
+        residual = (y - opening).to_numpy()
+        sd = self._estimate_noise(residual)
+        quiet = residual < np.median(residual) + 3 * sd
+        offset = float(np.median(residual[quiet])) if quiet.any() else 0.0
+        return opening + offset
+
+    @staticmethod
+    def _estimate_noise(values):
+        """Robust noise standard deviation from first differences:
+        1.4826 * MAD(diff) / sqrt(2). Smooth peaks contribute little to first differences."""
+        d = np.diff(np.asarray(values, dtype=float))
+        if len(d) == 0:
+            return 0.0
+        mad = np.median(np.abs(d - np.median(d)))
+        return float(1.4826 * mad / np.sqrt(2.0))
+
     def integrate_peaks(self):
-        """Integrate detected peaks to get peak areas."""
+        """Integrate each peak over its integration limits with the trapezoidal rule
+        (area in intensity x time units)."""
         if self.peaks is None:
             raise ValueError("No peaks detected. Run detect_peaks() first.")
-        
-        areas = []
-        
-        for _, peak in self.peaks.iterrows():
-            # Get peak region - CONVERT TO INT
-            left = int(peak['left_base'])
-            right = int(peak['right_base'])
-            
-            peak_time = self.data['time'].iloc[left:right+1]
-            peak_intensity = (self.data['intensity'].iloc[left:right+1] - 
-                            self.baseline.iloc[left:right+1])
-            
-            # Integrate using trapezoidal rule
-            area = integrate.trapezoid(peak_intensity, peak_time)
-            areas.append(area)
-        
-        self.peaks['peak_area'] = areas
-        
+        corrected = (self.data['intensity'] - self.baseline).to_numpy()
+        t = self.data['time'].to_numpy()
+        self.peaks['peak_area'] = [
+            float(integrate.trapezoid(corrected[int(p.left_base):int(p.right_base) + 1],
+                                      t[int(p.left_base):int(p.right_base) + 1]))
+            for p in self.peaks.itertuples()
+        ]
         return self.peaks
-    
+
     def calculate_snr(self):
-        """Calculate signal-to-noise ratio for each peak."""
+        """Signal-to-noise ratio as corrected peak height divided by the noise standard
+        deviation. Note that pharmacopeial definitions (for example 2H/h with peak-to-peak
+        noise) give different numbers."""
         if self.peaks is None:
             raise ValueError("No peaks detected. Run detect_peaks() first.")
-        
-        # Estimate noise from baseline region
-        noise_region = self.data['intensity'][:100]  # First 100 points
-        noise_std = noise_region.std()
-        
-        self.peaks['snr'] = self.peaks['peak_height'] / noise_std
-        
+        self.peaks['snr'] = self.peaks['peak_height'] / max(self.noise_sd, 1e-12)
         return self.peaks
-    
+
     def plot_detected_peaks(self, save_path=None):
         """Visualize detected peaks on chromatogram."""
         if self.peaks is None:
@@ -285,7 +322,7 @@ class PeakDetector:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
             print(f"✅ Peak detection plot saved to: {save_path}")
         
-        plt.show()
+        plt.close(fig)
         
         # Print peak summary
         print("\n=== Peak Detection Summary ===")
@@ -322,7 +359,9 @@ class CalibrationCurve:
             'peak_area': peak_areas
         })
         
-        # Fit linear model: y = mx + b
+        if len(concentrations) < 3:
+            raise ValueError("At least three calibration standards are required")
+        # Fit linear model: area = slope * concentration + intercept
         self.curve_params = np.polyfit(concentrations, peak_areas, 1)
         
         # Calculate R²
@@ -332,6 +371,14 @@ class CalibrationCurve:
         self.r_squared = 1 - (ss_res / ss_tot)
         
         return self.curve_params, self.r_squared
+
+    @property
+    def slope(self):
+        return None if self.curve_params is None else float(self.curve_params[0])
+
+    @property
+    def intercept(self):
+        return None if self.curve_params is None else float(self.curve_params[1])
     
     def quantify_samples(self, peak_areas):
         """
@@ -392,7 +439,7 @@ class CalibrationCurve:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
             print(f"✅ Calibration curve plot saved to: {save_path}")
         
-        plt.show()
+        plt.close(fig)
         
         # Print calibration info
         print("\n=== Calibration Curve Summary ===")
@@ -415,72 +462,58 @@ class QualityControl:
         """Initialize QC checker."""
         self.qc_results = {}
     
-    def check_peak_shape(self, peak_data, chromatogram_data):
+    def check_peak_shape(self, peak_data, chromatogram_data, baseline=None, smooth_window=11):
         """
-        Assess peak shape quality (symmetry).
-        
+        Asymmetry factor As = b / a measured at 10% of peak height, where a and b are the
+        distances from the apex to the leading and trailing edges. As = 1 for a symmetric
+        peak and As > 1 for tailing.
+
         Args:
-            peak_data: DataFrame of detected peaks
-            chromatogram_data: Full chromatogram DataFrame
+            peak_data: peaks from PeakDetector (needs 'apex_index' and 'peak_id')
+            chromatogram_data: DataFrame with 'time' and 'intensity'
+            baseline: baseline to subtract (PeakDetector.baseline); if None, the minimum
+                intensity is used
+            smooth_window: Savitzky-Golay window (points) applied before measuring widths
         """
-        shape_metrics = []
-        
-        for _, peak in peak_data.iterrows():
-            # Get peak region
-            left = peak['left_base']
-            right = peak['right_base']
-            peak_idx = int((left + right) / 2)
-            
-            # Calculate asymmetry factor
-            # AF = b/a where b is distance from peak max to trailing edge
-            # and a is distance from leading edge to peak max
-            a = peak_idx - left
-            b = right - peak_idx
-            asymmetry = b / a if a > 0 else np.nan
-            
-            shape_metrics.append({
-                'peak_id': peak['peak_id'],
-                'asymmetry_factor': asymmetry,
-                'quality': 'Good' if 0.9 <= asymmetry <= 1.1 else 
-                          'Acceptable' if 0.8 <= asymmetry <= 1.2 else 'Poor'
-            })
-        
-        self.qc_results['peak_shape'] = pd.DataFrame(shape_metrics)
+        y = chromatogram_data['intensity'].to_numpy(dtype=float)
+        y = y - (np.asarray(baseline, dtype=float) if baseline is not None else y.min())
+        if len(y) > smooth_window:
+            y = signal.savgol_filter(y, smooth_window, 2)
+        apexes = peak_data['apex_index'].to_numpy(dtype=int)
+        rows = []
+        if len(apexes):
+            _, _, left_ips, right_ips = signal.peak_widths(y, apexes, rel_height=0.9)
+            for pid, apex, l, r in zip(peak_data['peak_id'], apexes, left_ips, right_ips):
+                a, b = apex - l, r - apex
+                asym = b / a if a > 0 else np.nan
+                rows.append({'peak_id': pid, 'asymmetry_factor': asym,
+                             'quality': 'Good' if 0.9 <= asym <= 1.2 else
+                                        'Acceptable' if 0.8 <= asym <= 1.5 else 'Poor'})
+        self.qc_results['peak_shape'] = pd.DataFrame(rows, columns=['peak_id', 'asymmetry_factor', 'quality'])
         return self.qc_results['peak_shape']
-    
+
     def check_resolution(self, peak_data):
         """
-        Calculate resolution between adjacent peaks.
-        
+        Resolution of adjacent peaks from half-height widths:
+        Rs = 1.18 (t2 - t1) / (w0.5,1 + w0.5,2). Rs >= 1.5 indicates baseline separation.
+
         Args:
-            peak_data: DataFrame of detected peaks
+            peak_data: peaks from PeakDetector (needs 'retention_time' and 'fwhm')
         """
         if len(peak_data) < 2:
-            print("⚠️ Need at least 2 peaks to calculate resolution")
-            return None
-        
-        resolutions = []
-        
-        for i in range(len(peak_data) - 1):
-            peak1 = peak_data.iloc[i]
-            peak2 = peak_data.iloc[i + 1]
-            
-            # Resolution = 2 * (RT2 - RT1) / (W1 + W2)
-            rt_diff = peak2['retention_time'] - peak1['retention_time']
-            avg_width = (peak1['width'] + peak2['width']) / 2
-            
-            resolution = 2 * rt_diff / (avg_width * 0.1) if avg_width > 0 else np.nan
-            
-            resolutions.append({
-                'peak_pair': f"{peak1['peak_id']}-{peak2['peak_id']}",
-                'resolution': resolution,
-                'quality': 'Baseline' if resolution >= 1.5 else
-                          'Partial' if resolution >= 1.0 else 'Poor'
-            })
-        
-        self.qc_results['resolution'] = pd.DataFrame(resolutions)
+            self.qc_results['resolution'] = pd.DataFrame(columns=['peak_pair', 'resolution', 'quality'])
+            return self.qc_results['resolution']
+        ordered = peak_data.sort_values('retention_time').reset_index(drop=True)
+        rows = []
+        for i in range(len(ordered) - 1):
+            p1, p2 = ordered.iloc[i], ordered.iloc[i + 1]
+            denom = p1['fwhm'] + p2['fwhm']
+            rs = 1.18 * (p2['retention_time'] - p1['retention_time']) / denom if denom > 0 else np.nan
+            rows.append({'peak_pair': f"{int(p1['peak_id'])}-{int(p2['peak_id'])}", 'resolution': rs,
+                         'quality': 'Baseline' if rs >= 1.5 else 'Partial' if rs >= 1.0 else 'Poor'})
+        self.qc_results['resolution'] = pd.DataFrame(rows)
         return self.qc_results['resolution']
-    
+
     def generate_qc_report(self, save_path=None):
         """Generate comprehensive QC report."""
         print("\n" + "="*70)
@@ -584,7 +617,7 @@ class LCMSAnalysisPipeline:
         # Quality control
         print("\n📊 Step 3: Quality Control")
         qc = QualityControl()
-        qc.check_peak_shape(detector.peaks, parser.get_chromatogram())
+        qc.check_peak_shape(detector.peaks, parser.get_chromatogram(), detector.baseline)
         qc.check_resolution(detector.peaks)
         qc.generate_qc_report(
             save_path=self.output_dir / f"{sample_name}_qc_report.txt"

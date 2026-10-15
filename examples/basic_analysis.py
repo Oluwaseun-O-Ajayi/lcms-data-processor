@@ -5,7 +5,14 @@ Demonstrates basic usage of the LC-MS Data Processor toolkit.
 """
 
 import sys
-sys.path.append('..')
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+if not (ROOT / 'data' / 'standard_1ngml.csv').exists():
+    import generate_sample_data  # creates the synthetic example data on first use
+    generate_sample_data.main()
 
 from lcms_data_processor import LCMSAnalysisPipeline
 
@@ -16,12 +23,12 @@ print("""
 """)
 
 # Create pipeline
-pipeline = LCMSAnalysisPipeline(output_dir='results')
+pipeline = LCMSAnalysisPipeline(output_dir=ROOT / 'results')
 
 # Process a sample
 print("\nProcessing Sample 1...")
 results = pipeline.process_sample(
-    data_file='data/sample1.csv',
+    data_file=str(ROOT / 'data' / 'sample1.csv'),
     sample_name='Sample_1'
 )
 
