@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
+RNG = np.random.default_rng(2026)  # fixed seed: the example data are reproducible
+
 def gaussian_peak(x, amplitude, center, width):
     """Generate a Gaussian peak."""
     return amplitude * np.exp(-((x - center) ** 2) / (2 * width ** 2))
@@ -52,7 +54,7 @@ def generate_chromatogram(
         intensity += gaussian_peak(time, height, rt, width)
     
     # Add noise
-    noise = np.random.normal(0, noise_level, num_points)
+    noise = RNG.normal(0, noise_level, num_points)
     intensity += noise
     
     # Ensure no negative values
@@ -70,7 +72,7 @@ def main():
     """Generate example chromatogram files."""
     
     # Create data directory
-    data_dir = Path('data')
+    data_dir = Path(__file__).resolve().parent / 'data'
     data_dir.mkdir(exist_ok=True)
     
     print("Generating example LC-MS chromatogram data...")
