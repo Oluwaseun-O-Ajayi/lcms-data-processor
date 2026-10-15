@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lcms-data-processor"
+version = "1.1.0"
+description = "Transparent processing of exported LC-MS chromatograms: baseline, peak detection and integration, signal-to-noise, peak shape, resolution and linear calibration"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Oluwaseun O. Ajayi", email = "oluwaseun.ajayi@uga.edu" }]
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.23", "pandas>=1.5", "matplotlib>=3.6", "scipy>=1.9"]
+classifiers = [
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Education",
+  "Topic :: Scientific/Engineering :: Chemistry",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"
+Issues = "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor/issues"
+
+[tool.setuptools]
+py-modules = ["lcms_data_processor"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

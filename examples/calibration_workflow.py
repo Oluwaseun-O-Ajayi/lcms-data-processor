@@ -5,7 +5,14 @@ Demonstrates how to build a calibration curve and quantify unknowns.
 """
 
 import sys
-sys.path.append('..')
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+if not (ROOT / 'data' / 'standard_1ngml.csv').exists():
+    import generate_sample_data  # creates the synthetic example data on first use
+    generate_sample_data.main()
 
 from lcms_data_processor import (
     ChromatogramParser,
@@ -25,7 +32,7 @@ print("\n" + "="*70)
 print("STEP 1: Processing Calibration Standards")
 print("="*70)
 
-standard_files = sorted(glob.glob('data/standard_*.csv'))
+standard_files = sorted(glob.glob(str(ROOT / 'data' / 'standard_*.csv')))
 
 if len(standard_files) == 0:
     print("\n⚠️  No standard files found!")
@@ -36,7 +43,7 @@ standards_data = []
 
 for std_file in standard_files:
     # Extract concentration from filename (e.g., "standard_50ngml.csv" -> 50)
-    conc_str = std_file.split('_')[1].replace('ngml.csv', '')
+    conc_str = Path(std_file).name.split('_')[1].replace('ngml.csv', '')
     concentration = float(conc_str)
     
     # Parse and analyze
@@ -74,10 +81,11 @@ cal = CalibrationCurve()
 concentrations = [s['concentration'] for s in standards_data]
 peak_areas = [s['peak_area'] for s in standards_data]
 
-slope, r_squared = cal.fit_calibration(concentrations, peak_areas)
+params, r_squared = cal.fit_calibration(concentrations, peak_areas)
 
 print(f"\n📊 Calibration Results:")
-print(f"   Slope: {slope:.4e}")
+print(f"   Slope: {cal.slope:.4e}")
+print(f"   Intercept: {cal.intercept:.4e}")
 print(f"   R²: {r_squared:.4f}")
 
 if r_squared >= 0.99:
@@ -87,14 +95,14 @@ elif r_squared >= 0.95:
 else:
     print("   ⚠️  Warning: R² < 0.95")
 
-cal.plot_calibration_curve(save_path='results/calibration_curve.png')
+cal.plot_calibration_curve(save_path=ROOT / 'results' / 'calibration_curve.png')
 
 # Step 3: Quantify unknown samples
 print("\n" + "="*70)
 print("STEP 3: Quantifying Unknown Samples")
 print("="*70)
 
-unknown_files = ['data/sample1.csv', 'data/sample2.csv']
+unknown_files = [str(ROOT / 'data' / 'sample1.csv'), 'data/sample2.csv']
 
 for unknown_file in unknown_files:
     try:
