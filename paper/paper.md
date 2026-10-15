@@ -45,6 +45,6 @@ The package provides an inspectable, tested reference for the core steps of chro
 
 # Acknowledgements
 
-[Funding statement, or: This work received no specific external funding.]
+This work was conducted independently and received no specific funding from any agency in the public, commercial, or not-for-profit sectors.
 
 # References
