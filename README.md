@@ -81,3 +81,7 @@ Ajayi, O. O. (2026). *LC-MS Data Processor*. Zenodo. https://doi.org/10.5281/zen
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Support
+
+Questions, bug reports and feature requests are welcome as GitHub issues. The author maintains the package and reviews issues and pull requests; see CONTRIBUTING.md for how to contribute.

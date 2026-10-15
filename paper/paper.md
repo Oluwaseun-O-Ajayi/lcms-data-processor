@@ -45,7 +45,7 @@ The package provides an inspectable, tested reference for the core steps of chro
 
 # AI usage disclosure
 
-Generative AI (Claude, Anthropic) was used in October 2026 to review the code, rewrite the baseline, integration, signal-to-noise, asymmetry and resolution routines, write the test suite and continuous-integration configuration, revise the README, and draft this paper. The author reviewed every change, ran the tests and examples, checked all references against their sources, and made the design decisions.
+Claude Opus 5.5 (Anthropic) was used in October 2026 for code review, revision of the processing routines, test writing and revision of this paper. The author reviewed, ran and verified all changes and takes full responsibility for the software and the paper.
 
 # Acknowledgements
 
