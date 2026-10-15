@@ -63,4 +63,5 @@ Thumbs.db
 # Logs
 *.log
 *.out
-*.err
+*.err!paper/figure.png
+.pytest_cache/
