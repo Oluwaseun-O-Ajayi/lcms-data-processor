@@ -43,6 +43,10 @@ The test suite checks the processing against simulated chromatograms with known 
 
 The package provides an inspectable, tested reference for the core steps of chromatographic quantification, suited to laboratory courses and to checking processing choices on exported data before they are fixed in a validated method. The bundled synthetic data and accuracy checks make it possible to show students how noise, baseline drift and integration limits affect a reported area. The package has not been validated for regulated or clinical quantification.
 
+# AI usage disclosure
+
+The author designed and wrote the original version of this software in December 2025, and wrote this paper. In October 2026, Claude Opus 5.5 (Anthropic) was used for code review, refactoring, and testing. The author directed and verified all changes and takes full responsibility for the work.
+
 # Acknowledgements
 
 This work was conducted independently and received no specific funding from any agency in the public, commercial, or not-for-profit sectors.
