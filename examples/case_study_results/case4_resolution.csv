@@ -1,0 +1,5 @@
+separation_min,true_resolution,peaks_detected,reported_resolution,quality
+0.3,0.75,2,0.53,Poor
+0.5,1.25,2,1.29,Partial
+0.8,2.0,2,2.0,Baseline
+1.2,3.0,2,3.0,Baseline

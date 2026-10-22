@@ -116,3 +116,11 @@ def test_scripts_run(script, tmp_path):
     proc = subprocess.run([sys.executable, str(ROOT / script)], cwd=tmp_path, env=env,
                           capture_output=True, text=True, timeout=300)
     assert proc.returncode == 0, proc.stderr[-2000:]
+
+
+@pytest.mark.parametrize("script", sorted(p.name for p in (ROOT / "examples").glob("case_study_*.py")))
+def test_case_studies_run(script, tmp_path):
+    env = dict(os.environ, MPLBACKEND="Agg", PYTHONIOENCODING="utf-8")
+    proc = subprocess.run([sys.executable, str(ROOT / "examples" / script)], cwd=tmp_path, env=env,
+                          capture_output=True, text=True, timeout=300)
+    assert proc.returncode == 0, proc.stderr[-2000:]

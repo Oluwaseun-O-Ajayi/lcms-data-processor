@@ -1,0 +1,16 @@
+baseline,replicate,recovery_pct
+flat,1,100.6
+flat,2,97.7
+flat,3,99.3
+flat,4,99.2
+flat,5,100.5
+linear_drift,1,101.4
+linear_drift,2,97.7
+linear_drift,3,99.6
+linear_drift,4,99.0
+linear_drift,5,99.9
+curved,1,98.5
+curved,2,100.5
+curved,3,100.5
+curved,4,99.6
+curved,5,100.8

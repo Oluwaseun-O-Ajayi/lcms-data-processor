@@ -1,0 +1,8 @@
+sample_type,true_conc,true_area,measured_area,snr,back_calculated,accuracy_pct
+standard,1,30,,,,
+standard,5,150,157.1,9.9,4.93,98.6
+standard,10,300,310.9,20.5,10.11,101.1
+standard,50,1500,1493.0,96.5,49.94,99.9
+standard,100,3000,2979.4,191.0,100.02,100.0
+unknown,20,600,599.3,38.8,19.83,99.1
+unknown,75,2250,2245.0,140.3,75.28,100.4

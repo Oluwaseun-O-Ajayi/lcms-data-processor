@@ -41,7 +41,7 @@ The test suite checks the processing against simulated chromatograms with known 
 
 # Research impact statement
 
-The package provides an inspectable, tested reference for the core steps of chromatographic quantification, suited to laboratory courses and to checking processing choices on exported data before they are fixed in a validated method. The bundled synthetic data and accuracy checks make it possible to show students how noise, baseline drift and integration limits affect a reported area. The package has not been validated for regulated or clinical quantification.
+The package provides an inspectable, tested reference for the core steps of chromatographic quantification, suited to laboratory courses and to checking processing choices on exported data before they are fixed in a validated method. The bundled synthetic data and accuracy checks make it possible to show students how noise, baseline drift and integration limits affect a reported area. Four reproducible case studies (`examples/CASE_STUDIES.md`) check peak areas, baseline correction, calibration and resolution against known answers. The package has not been validated for regulated or clinical quantification.
 
 # AI usage disclosure
 

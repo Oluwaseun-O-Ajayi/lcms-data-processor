@@ -42,6 +42,8 @@ python examples/basic_analysis.py
 python examples/calibration_workflow.py
 ```
 
+Four reproducible case studies that check areas, baseline correction, calibration and resolution against known answers are described in [`examples/CASE_STUDIES.md`](examples/CASE_STUDIES.md).
+
 ## Quick start
 
 ```python
