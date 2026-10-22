@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lcms-data-processor"
-version = "1.1.0"
+version = "1.1.1"
 description = "Transparent processing of exported LC-MS chromatograms: baseline, peak detection and integration, signal-to-noise, peak shape, resolution and linear calibration"
 readme = "README.md"
 license = { text = "MIT" }
