@@ -10,9 +10,9 @@ authors:
     affiliation: "University of Georgia"
     orcid: "https://orcid.org/0000-0003-0040-7217"
 
-version: "1.1.1"
+version: "1.2.0"
 doi: "10.5281/zenodo.21652569"
-date-released: "2026-10-21"
+date-released: "2026-11-10"
 
 url: "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"
 repository-code: "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"
@@ -23,6 +23,8 @@ keywords:
   - lc-ms
   - liquid-chromatography
   - mass-spectrometry
+  - mzml
+  - pyopenms
   - chromatogram-processing
   - peak-detection
   - analytical-chemistry
@@ -32,10 +34,11 @@ keywords:
 
 abstract: >
   LC-MS Data Processor is an open-source Python workflow
-  for chromatogram processing, peak integration,
+  for chromatogram processing, extracted-ion
+  chromatograms from mzML via pyOpenMS, peak integration,
   calibration-curve fitting, quantification,
   and quality-control reporting. The software
   provides a reproducible framework for LC-MS
   data analysis using exported time-intensity
-  chromatogram data and includes visualization,
+  chromatograms or mzML files and includes visualization,
   reporting, and educational workflow examples.

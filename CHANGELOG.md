@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 (2026-11)
+
+### Added
+- `MzMLReader`: reads mzML with pyOpenMS and returns total-ion and extracted-ion chromatograms (m/z ± ppm, any MS level) as time-intensity tables that `PeakDetector` accepts directly. Retention times are converted from seconds to minutes.
+- `examples/make_mzml_example.py` and `examples/mzml_xic_workflow.py`: a synthetic mzML run with known areas and a co-eluting ion 35 ppm from one analyte, processed at 10 and 50 ppm windows.
+- `tests/test_mzml.py`: accuracy tests for mzML input (skipped when pyOpenMS is not installed).
+- Optional dependency group `mzml` (`pip install ".[mzml]"`).
+
 ## 1.1.1 (2026-10)
 
 ### Changed

@@ -2,13 +2,13 @@
 LC-MS Data Processing Pipeline
 ===============================
 
-A Python toolkit for processing chromatograms exported from liquid
-chromatography-mass spectrometry (LC-MS) instruments as time-intensity CSV
-files: baseline estimation, peak detection and integration, signal-to-noise,
+A Python toolkit for processing liquid chromatography-mass spectrometry
+(LC-MS) chromatograms, read from time-intensity CSV files or extracted from
+mzML files: baseline estimation, peak detection and integration, signal-to-noise,
 peak-shape and resolution checks, and linear calibration.
 
 Features:
-- Chromatogram data import and visualization
+- Chromatogram import from CSV, and TIC/XIC extraction from mzML via pyOpenMS
 - Automated peak detection and integration
 - Calibration curve generation and quantification
 - Quality control metrics (S/N ratio, peak shape, resolution)
@@ -103,6 +103,88 @@ class ChromatogramParser:
             print(f"✅ Chromatogram plot saved to: {save_path}")
         
         plt.close(fig)
+
+
+class MzMLReader:
+    """
+    Read an mzML file and extract chromatograms for the rest of the pipeline.
+
+    Uses pyOpenMS (install with ``pip install pyopenms`` or
+    ``pip install ".[mzml]"``). Retention times in mzML are stored in seconds
+    and are returned in minutes. Every method returns a DataFrame with
+    ``time`` and ``intensity`` columns that ``PeakDetector`` accepts directly.
+    """
+
+    def __init__(self, mzml_file):
+        """
+        Load an mzML file.
+
+        Args:
+            mzml_file: Path to an mzML file (centroided or profile spectra)
+        """
+        try:
+            import pyopenms as oms
+        except ImportError as exc:
+            raise ImportError("Reading mzML requires pyOpenMS: pip install pyopenms") from exc
+
+        self.mzml_file = Path(mzml_file)
+        if not self.mzml_file.exists():
+            raise FileNotFoundError(f"mzML file not found: {mzml_file}")
+
+        self.experiment = oms.MSExperiment()
+        oms.MzMLFile().load(str(self.mzml_file), self.experiment)
+        self.experiment.sortSpectra(True)
+        self.metadata = {
+            'filename': self.mzml_file.name,
+            'num_spectra': self.experiment.getNrSpectra(),
+            'ms_levels': sorted({s.getMSLevel() for s in self.experiment}),
+        }
+
+    def _spectra(self, ms_level):
+        spectra = [s for s in self.experiment if s.getMSLevel() == ms_level]
+        if not spectra:
+            raise ValueError(f"No MS{ms_level} spectra in {self.mzml_file.name}")
+        return spectra
+
+    def tic(self, ms_level=1):
+        """Total-ion chromatogram: summed intensity of each spectrum."""
+        spectra = self._spectra(ms_level)
+        times = np.array([s.getRT() for s in spectra]) / 60.0
+        intensity = np.array([float(np.sum(s.get_peaks()[1])) for s in spectra])
+        return pd.DataFrame({'time': times, 'intensity': intensity})
+
+    def xic(self, mz, ppm=10.0, ms_level=1):
+        """
+        Extracted-ion chromatogram: summed intensity within mz +/- ppm.
+
+        Args:
+            mz: Target m/z
+            ppm: Half-width of the extraction window in parts per million
+            ms_level: MS level to extract from (default 1)
+        """
+        if mz <= 0 or ppm <= 0:
+            raise ValueError("mz and ppm must be positive")
+        tol = mz * ppm * 1e-6
+        spectra = self._spectra(ms_level)
+        times = np.empty(len(spectra))
+        intensity = np.empty(len(spectra))
+        for i, s in enumerate(spectra):
+            mzs, ints = s.get_peaks()
+            times[i] = s.getRT() / 60.0
+            intensity[i] = float(ints[np.abs(mzs - mz) <= tol].sum())
+        return pd.DataFrame({'time': times, 'intensity': intensity})
+
+    def xics(self, targets, ppm=10.0, ms_level=1):
+        """
+        Extract several chromatograms at once.
+
+        Args:
+            targets: Mapping of name to target m/z
+        Returns:
+            Dict of name to time-intensity DataFrame
+        """
+        return {name: self.xic(mz, ppm=ppm, ms_level=ms_level)
+                for name, mz in targets.items()}
 
 
 class PeakDetector:
