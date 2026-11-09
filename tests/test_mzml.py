@@ -76,5 +76,5 @@ def test_invalid_input(reader, tmp_path):
 def test_mzml_example_runs(tmp_path):
     env = dict(os.environ, MPLBACKEND="Agg", PYTHONIOENCODING="utf-8")
     proc = subprocess.run([sys.executable, str(ROOT / "examples" / "mzml_xic_workflow.py")],
-                          cwd=tmp_path, env=env, capture_output=True, text=True, timeout=300)
+                          cwd=tmp_path, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300)
     assert proc.returncode == 0, proc.stderr[-2000:]

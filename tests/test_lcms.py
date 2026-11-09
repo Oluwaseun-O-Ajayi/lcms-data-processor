@@ -114,7 +114,7 @@ def test_parser_validates_columns(tmp_path):
 def test_scripts_run(script, tmp_path):
     env = dict(os.environ, MPLBACKEND="Agg", PYTHONIOENCODING="utf-8")
     proc = subprocess.run([sys.executable, str(ROOT / script)], cwd=tmp_path, env=env,
-                          capture_output=True, text=True, timeout=300)
+                          capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300)
     assert proc.returncode == 0, proc.stderr[-2000:]
 
 
@@ -122,5 +122,5 @@ def test_scripts_run(script, tmp_path):
 def test_case_studies_run(script, tmp_path):
     env = dict(os.environ, MPLBACKEND="Agg", PYTHONIOENCODING="utf-8")
     proc = subprocess.run([sys.executable, str(ROOT / "examples" / script)], cwd=tmp_path, env=env,
-                          capture_output=True, text=True, timeout=300)
+                          capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300)
     assert proc.returncode == 0, proc.stderr[-2000:]
