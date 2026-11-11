@@ -65,3 +65,4 @@ Thumbs.db
 *.out
 *.err!paper/figure.png
 .pytest_cache/
+.coverage
