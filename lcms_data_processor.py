@@ -186,6 +186,40 @@ class MzMLReader:
         return {name: self.xic(mz, ppm=ppm, ms_level=ms_level)
                 for name, mz in targets.items()}
 
+    def list_chromatograms(self):
+        """
+        Chromatograms stored in the file (for example fluorescence or UV detector
+        traces exported by MSConvert, or a vendor TIC).
+
+        Returns:
+            DataFrame with index, native_id, type and n_points
+        """
+        rows = [{'index': i, 'native_id': c.getNativeID(),
+                 'type': str(c.getChromatogramType()).split('.')[-1],
+                 'n_points': c.size()}
+                for i, c in enumerate(self.experiment.getChromatograms())]
+        return pd.DataFrame(rows, columns=['index', 'native_id', 'type', 'n_points'])
+
+    def chromatogram(self, match):
+        """
+        One stored chromatogram as a time (min) / intensity table.
+
+        Args:
+            match: chromatogram index, or a case-insensitive substring of its native ID
+                (for example "FLD")
+        """
+        chroms = self.experiment.getChromatograms()
+        if isinstance(match, (int, np.integer)):
+            picked = [chroms[int(match)]]
+        else:
+            picked = [c for c in chroms if str(match).lower() in c.getNativeID().lower()]
+        if len(picked) != 1:
+            ids = [c.getNativeID() for c in chroms]
+            raise ValueError(f"'{match}' matched {len(picked)} chromatograms; available: {ids}")
+        rt, inten = picked[0].get_peaks()
+        return pd.DataFrame({'time': np.asarray(rt, dtype=float) / 60.0,
+                             'intensity': np.asarray(inten, dtype=float)})
+
     def xic_matrix(self, mzs, ppm=10.0, ms_level=1):
         """
         Extract many chromatograms in one pass over the spectra.

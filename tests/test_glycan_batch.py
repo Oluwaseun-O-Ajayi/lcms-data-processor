@@ -114,3 +114,79 @@ def test_summarize_sweep_writes_tables_and_figure(mzml, tmp_path):
     summarize_sweep.main([str(tmp_path / "s_glycans.csv"), "--out", str(tmp_path / "sum")])
     for suffix in ("_spread.csv", "_by_ppm.csv", "_abundance_vs_ppm.png", "_abundance_vs_ppm.pdf"):
         assert (tmp_path / f"sum{suffix}").exists()
+
+
+# --- reference comparisons --------------------------------------------------
+
+import reference_compare as rc  # noqa: E402
+from make_mzml_example import FLD_DELAY_MIN  # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def fld_run(tmp_path_factory):
+    d = tmp_path_factory.mktemp("fld")
+    path = write_example(d / "fld.mzML", fld=True)
+    targets = pd.DataFrame({"name": list(ANALYTES), "mz": [v["mz"] for v in ANALYTES.values()],
+                            "rt_min": [v["rt_min"] - 0.5 for v in ANALYTES.values()],
+                            "rt_max": [v["rt_min"] + 0.5 for v in ANALYTES.values()]})
+    targets.to_csv(d / "t.csv", index=False)
+    long, _ = lcms_batch.run(lcms_batch.build_parser().parse_args(
+        ["--mzml", str(path), "--targets", str(d / "t.csv"), "--ppm", "10", "50", "--out", str(d / "s")]))
+    return path, long
+
+
+def test_fld_chromatogram_is_listed_and_read(fld_run):
+    reader = MzMLReader(fld_run[0])
+    listing = reader.list_chromatograms()
+    assert listing["type"].str.contains("EMISSION").any()
+    fld = reader.chromatogram("fld")
+    assert fld["time"].max() == pytest.approx(15.0, abs=0.01)
+    with pytest.raises(ValueError):
+        reader.chromatogram("UV")
+
+
+def test_fld_delay_estimate_and_agreement(fld_run):
+    reader = MzMLReader(fld_run[0])
+    table, s10 = rc.compare_fld(reader, fld_run[1], "FLD", ppm=10, width=5, baseline_window=0.1)
+    assert s10["delay_min"] == pytest.approx(FLD_DELAY_MIN, abs=0.02)
+    assert (table["status"] == "matched").all()
+    assert s10["mean_abs_diff_pct_points"] < 1.0
+    # The 50 ppm window lets the unlabelled interferent inflate A's MS share; FLD exposes it.
+    _, s50 = rc.compare_fld(reader, fld_run[1], "FLD", ppm=50, width=5, baseline_window=0.1)
+    assert s50["mean_abs_diff_pct_points"] > s10["mean_abs_diff_pct_points"] + 2
+
+
+def test_coeluting_glycans_on_one_fld_peak_are_flagged_not_compared():
+    t = np.arange(0, 10, 0.01)
+
+    class FakeReader:
+        def chromatogram(self, match):
+            return pd.DataFrame({"time": t, "intensity": 1000 * np.exp(-0.5 * ((t - 4.9) / 0.05) ** 2)
+                                 + 800 * np.exp(-0.5 * ((t - 7.9) / 0.05) ** 2)})
+
+    ms = pd.DataFrame({"glycan": ["X", "Y", "Z"], "ppm": 10.0, "width": 5, "baseline_window": 0.1,
+                       "peak_area": [2.0, 1.0, 3.0], "retention_time": [5.0, 5.02, 8.0]})
+    table, s = rc.compare_fld(FakeReader(), ms, "FLD", 10, 5, 0.1, delay=0.1)
+    status = table.set_index("glycan")["status"]
+    assert status["X"] == status["Y"] == "shared FLD peak"
+    assert status["Z"] == "matched"
+    assert s["n"] == 1
+
+
+def test_skyline_round_trip(tmp_path):
+    tl = gt.target_table(gt.IGG_CANDIDATES, label="2-AB", charges=(1, 2))
+    tl["name"] = tl["glycan"] + "_" + tl["charge"].astype(str) + "+"
+    sky_list = rc.skyline_transition_list(tl)
+    assert list(sky_list.columns[:4]) == ["Molecule List Name", "Molecule Name", "Precursor m/z", "Precursor Charge"]
+
+    rng = np.random.default_rng(1)
+    ours = tl.assign(ppm=10.0, width=5, baseline_window=0.1, target=tl["name"],
+                     peak_area=rng.uniform(1e4, 1e6, len(tl)))
+    report = pd.DataFrame({"Molecule Name": tl["glycan"], "Precursor Charge": tl["charge"],
+                           "Replicate Name": "r1",
+                           "Total Area MS1": ours["peak_area"] * 2.0 * rng.normal(1, 0.02, len(tl))})
+    _, per, s = rc.compare_skyline(ours, report, 10, 5, 0.1)
+    assert s["n_precursors"] == len(tl)
+    assert s["median_area_ratio"] == pytest.approx(0.5, rel=0.05)
+    assert s["spearman_rho_areas"] > 0.98
+    assert s["mean_abs_diff_pct_points"] < 0.5

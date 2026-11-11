@@ -23,6 +23,13 @@ ANALYTES = {
 # Interfering ion 35 ppm above analyte A, co-eluting with it.
 INTERFERENT = {'mz': 1111.3870 * (1 + 35e-6), 'rt_min': 6.0, 'sigma_min': 0.08, 'area': 5.0e4}
 
+# Fluorescence (FLD) trace: the detector sits before the MS, so peaks appear FLD_DELAY_MIN
+# earlier. FLD area is proportional to molar amount (one label per glycan), so the true FLD
+# shares equal the true MS shares of A and B. The interfering ion is unlabelled and gives no
+# fluorescence.
+FLD_DELAY_MIN = 0.15
+FLD_SCALE = 0.01
+
 RUN_MIN = 15.0
 SCAN_INTERVAL_S = 0.5
 SEED = 7
@@ -33,7 +40,7 @@ def elution(t_min, peak):
             * np.exp(-0.5 * ((t_min - peak['rt_min']) / peak['sigma_min']) ** 2))
 
 
-def write_example(path):
+def write_example(path, fld=False):
     import pyopenms as oms
 
     rng = np.random.default_rng(SEED)
@@ -51,6 +58,16 @@ def write_example(path):
         spec.setMSLevel(1)
         spec.set_peaks((np.asarray(mzs)[order], np.clip(np.asarray(ints)[order], 0, None)))
         exp.addSpectrum(spec)
+    if fld:
+        t = np.arange(0.0, RUN_MIN, 0.2 / 60)  # 5 Hz detector
+        y = 20 + 0.5 * t + rng.normal(0, 1.0, len(t))
+        for peak in ANALYTES.values():
+            y += FLD_SCALE * elution(t + FLD_DELAY_MIN, peak)
+        chrom = oms.MSChromatogram()
+        chrom.setNativeID('FLD1 A, Ex=330, Em=420')
+        chrom.setChromatogramType(oms.ChromatogramSettings.ChromatogramType.EMISSION_CHROMATOGRAM)
+        chrom.set_peaks((t * 60.0, y))
+        exp.addChromatogram(chrom)
     oms.MzMLFile().store(str(path), exp)
     return Path(path)
 

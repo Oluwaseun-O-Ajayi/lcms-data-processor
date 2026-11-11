@@ -76,6 +76,8 @@ lcms-batch --mzml run.mzML --glycans fetuin --label 2-AB --charges 1 2 3 \
 python examples/summarize_sweep.py results/run_glycans.csv --out results/summary
 ```
 
+`lcms-compare` checks MS-based abundances against fluorescence (for 2-AB and other fluorescent labels) and against Skyline.
+
 `glycan_targets` computes candidate m/z values from compositions (for example `N4H5F1S2`) with reducing-end labels and charge states; assignments still need retention time and MS/MS evidence. `cluster/README.md` shows how to run the sweep on a SLURM cluster with a public fetuin and IgG dataset.
 
 From mzML:

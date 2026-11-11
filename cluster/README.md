@@ -50,3 +50,47 @@ confirm it from the data: a peak at a plausible HILIC retention time, consistent
 charge states and isotope pattern, and MS/MS where available. Add confirmed
 retention windows to a targets CSV (`name, mz, glycan, rt_min, rt_max`) and rerun
 with `--targets` so every setting integrates the same peak.
+
+## 5. Reference comparisons
+
+### Fluorescence (2-AB and other fluorescent labels)
+
+Fluorescence area is proportional to molar amount, so it is the accepted reference for
+labelled-glycan quantitation. If the run recorded an FLD trace, MSConvert exports it as a
+chromatogram in the mzML file. Check what the file contains:
+
+```bash
+lcms-compare fld --mzml run.mzML --targets results/run_targets.csv --list
+```
+
+Then compare at any setting from the sweep (repeat for several settings to show which
+ones agree with fluorescence):
+
+```bash
+lcms-compare fld --mzml run.mzML --targets results/run_targets.csv --fld FLD \
+                 --ppm 10 --width 5 --baseline-window 0.1 --out results/run_fld_10ppm
+```
+
+The FLD-to-MS transfer delay is estimated from the data (cross-correlation with the
+MS total-ion chromatogram) unless you pass `--delay`. Glycans that land on the same
+fluorescence peak cannot be told apart by fluorescence; they are marked
+`shared FLD peak` and left out of the agreement statistics.
+
+If the mzML has no FLD chromatogram, check MSConvert's options for exporting
+detector traces, or export the FLD trace as CSV from the vendor software.
+
+### Skyline
+
+1. Write a transition list from the same m/z values:
+   `lcms-compare skyline-targets --targets results/run_target_list.csv --out skyline_targets.csv`
+2. In Skyline, set Full-Scan MS1 filtering to match this package: monoisotopic peak
+   only, centroided data, and the same mass accuracy (ppm) as `--ppm`.
+3. Import the list (Edit > Insert > Transition List), import the mzML results, and
+   check the peak boundaries.
+4. Export a report with the columns `Molecule Name`, `Precursor Charge`,
+   `Replicate Name` and `Total Area MS1` (File > Export > Report).
+5. Compare:
+   `lcms-compare skyline --targets results/run_targets.csv --skyline report.csv --ppm 10 --out results/run_skyline`
+
+Skyline menus and setting names change between versions; check them against the
+version you use and record it in the methods.

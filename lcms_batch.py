@@ -91,6 +91,7 @@ def run(args):
                     rows.append({
                         'file': Path(f).name, 'ppm': ppm, 'width': width, 'baseline_window': bw,
                         'target': tg['name'], 'glycan': tg['glycan'], 'mz': tg['mz'],
+                        'charge': tg['charge'] if 'charge' in tg else np.nan,
                         'n_peaks': n_peaks,
                         'retention_time': None if peak is None else peak['retention_time'],
                         'peak_area': 0.0 if peak is None else peak['peak_area'],
