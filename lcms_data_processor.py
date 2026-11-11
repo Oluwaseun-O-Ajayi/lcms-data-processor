@@ -68,7 +68,7 @@ class ChromatogramParser:
             self.metadata['max_intensity'] = self.data['intensity'].max()
             
         except Exception as e:
-            raise Exception(f"Error loading chromatogram data: {e}")
+            raise ValueError(f"Error loading chromatogram data: {e}") from e
     
     def get_chromatogram(self):
         """Get chromatogram data as DataFrame."""
@@ -185,6 +185,36 @@ class MzMLReader:
         """
         return {name: self.xic(mz, ppm=ppm, ms_level=ms_level)
                 for name, mz in targets.items()}
+
+    def xic_matrix(self, mzs, ppm=10.0, ms_level=1):
+        """
+        Extract many chromatograms in one pass over the spectra.
+
+        Each spectrum is read once; window sums come from a cumulative sum over its
+        sorted m/z values, so the cost grows with the number of spectra rather than
+        the number of targets.
+
+        Args:
+            mzs: sequence of target m/z values
+        Returns:
+            (times in minutes, intensity array of shape (n_spectra, n_targets))
+        """
+        mzs = np.asarray(mzs, dtype=float)
+        if mzs.ndim != 1 or len(mzs) == 0 or np.any(mzs <= 0) or ppm <= 0:
+            raise ValueError("mzs must be a non-empty list of positive values and ppm must be positive")
+        lo, hi = mzs * (1 - ppm * 1e-6), mzs * (1 + ppm * 1e-6)
+        spectra = self._spectra(ms_level)
+        times = np.empty(len(spectra))
+        out = np.zeros((len(spectra), len(mzs)))
+        for i, s in enumerate(spectra):
+            m, inten = s.get_peaks()
+            times[i] = s.getRT() / 60.0
+            if len(m) == 0:
+                continue
+            order = np.argsort(m, kind='stable')
+            m, csum = m[order], np.concatenate(([0.0], np.cumsum(inten[order], dtype=float)))
+            out[i] = csum[np.searchsorted(m, hi, side='right')] - csum[np.searchsorted(m, lo, side='left')]
+        return times, out
 
 
 class PeakDetector:
@@ -374,10 +404,10 @@ class PeakDetector:
 
         ax2_twin = ax2.twinx()
 
-        bars1 = ax2.bar(x_pos - 0.2, self.peaks['peak_area'], 
+        ax2.bar(x_pos - 0.2, self.peaks['peak_area'], 
                width=0.4, label='Peak Area', 
                color='skyblue', edgecolor='black')
-        bars2 = ax2_twin.bar(x_pos + 0.2, self.peaks['snr'], 
+        ax2_twin.bar(x_pos + 0.2, self.peaks['snr'], 
                     width=0.4, label='S/N Ratio',
                     color='coral', edgecolor='black')
 
@@ -659,7 +689,7 @@ class LCMSAnalysisPipeline:
         self.output_dir.mkdir(exist_ok=True)
         
         print(f"\n{'='*70}")
-        print(f"   LC-MS DATA PROCESSING PIPELINE")
+        print("   LC-MS DATA PROCESSING PIPELINE")
         print(f"{'='*70}\n")
         print(f"📁 Output directory: {self.output_dir}")
     

@@ -103,7 +103,7 @@ def test_calibration_recovers_slope_and_quantifies():
 def test_parser_validates_columns(tmp_path):
     bad = tmp_path / "bad.csv"
     pd.DataFrame({"t": [0, 1], "i": [1, 2]}).to_csv(bad, index=False)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         ChromatogramParser(bad)
     with pytest.raises(FileNotFoundError):
         ChromatogramParser(tmp_path / "missing.csv")

@@ -91,7 +91,7 @@ def main():
     )
     chrom1.to_csv(data_dir / 'sample1.csv', index=False)
     print(f"   ✅ Created: {data_dir / 'sample1.csv'}")
-    print(f"   Peaks: 4, S/N: High")
+    print("   Peaks: 4, S/N: High")
     
     # Sample 2: Higher concentration (for calibration)
     print("\n2. Generating sample2.csv (higher concentration)...")
@@ -107,7 +107,7 @@ def main():
     )
     chrom2.to_csv(data_dir / 'sample2.csv', index=False)
     print(f"   ✅ Created: {data_dir / 'sample2.csv'}")
-    print(f"   Peaks: 4, S/N: Very High")
+    print("   Peaks: 4, S/N: Very High")
     
     # Sample 3: Lower quality (more noise)
     print("\n3. Generating sample3.csv (noisy data)...")
@@ -122,7 +122,7 @@ def main():
     )
     chrom3.to_csv(data_dir / 'sample3.csv', index=False)
     print(f"   ✅ Created: {data_dir / 'sample3.csv'}")
-    print(f"   Peaks: 3, S/N: Medium (noisy)")
+    print("   Peaks: 3, S/N: Medium (noisy)")
     
     # Calibration standards
     print("\n4. Generating calibration standards...")

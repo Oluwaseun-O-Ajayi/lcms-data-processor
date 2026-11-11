@@ -83,7 +83,7 @@ peak_areas = [s['peak_area'] for s in standards_data]
 
 params, r_squared = cal.fit_calibration(concentrations, peak_areas)
 
-print(f"\n📊 Calibration Results:")
+print("\n📊 Calibration Results:")
 print(f"   Slope: {cal.slope:.4e}")
 print(f"   Intercept: {cal.intercept:.4e}")
 print(f"   R²: {r_squared:.4f}")

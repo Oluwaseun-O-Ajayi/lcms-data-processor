@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lcms-data-processor"
-version = "1.2.0"
+version = "1.3.0"
 description = "Transparent processing of LC-MS chromatograms from CSV or mzML: baseline, peak detection and integration, signal-to-noise, peak shape, resolution and linear calibration"
 readme = "README.md"
 license = { text = "MIT" }
@@ -28,7 +28,10 @@ Homepage = "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"
 Issues = "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor/issues"
 
 [tool.setuptools]
-py-modules = ["lcms_data_processor"]
+py-modules = ["lcms_data_processor", "glycan_targets", "lcms_batch"]
+
+[project.scripts]
+lcms-batch = "lcms_batch:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0 (2026-11)
+
+### Added
+- `glycan_targets`: monoisotopic m/z for released N-glycans from compositions (long form `HexNAc4Hex5dHex1NeuAc2` or short form `N4H5F1S2`), with reducing-end labels (none, reduced, 2-AB, 2-AA, procainamide), H+, Na+ or NH4+ adducts and any charge state. Masses are computed from element formulas and checked against tabulated residue masses.
+- `MzMLReader.xic_matrix`: extracts many ion chromatograms in one pass over the spectra.
+- `lcms-batch` command: processes mzML files over a grid of extraction windows, peak widths and baseline windows, picks the largest peak in an optional retention-time window, and writes per-target results and per-glycan relative abundances.
+- `examples/summarize_sweep.py`: spread of relative abundance across settings, with a figure of abundance against extraction window.
+- `cluster/`: download script with checksum verification for a public released N-glycan dataset (doi:10.5281/zenodo.4705546), conversion notes, and a SLURM array job for parameter sweeps.
+
+### Changed
+- `ChromatogramParser` raises `ValueError` (chained to the original error) for unreadable or malformed CSV files.
+
 ## 1.2.0 (2026-11)
 
 ### Added

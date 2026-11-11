@@ -47,7 +47,7 @@ if len(results['peaks']) > 0:
     
     # Highlight main peak
     main_peak = results['peaks'].loc[results['peaks']['peak_area'].idxmax()]
-    print(f"\n⭐ Main Peak (highest area):")
+    print("\n⭐ Main Peak (highest area):")
     print(f"   RT: {main_peak['retention_time']:.2f} min")
     print(f"   Area: {main_peak['peak_area']:.2e}")
     print(f"   S/N: {main_peak['snr']:.1f}")

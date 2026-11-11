@@ -67,6 +67,17 @@ print(qc.check_peak_shape(det.peaks, chrom, det.baseline))
 print(qc.check_resolution(det.peaks))
 ```
 
+Released N-glycans, over a grid of processing settings:
+
+```bash
+pip install ".[mzml]"
+lcms-batch --mzml run.mzML --glycans fetuin --label 2-AB --charges 1 2 3 \
+           --ppm 5 10 20 50 --width 3 5 --baseline-window 0.05 0.1 --out results/run
+python examples/summarize_sweep.py results/run_glycans.csv --out results/summary
+```
+
+`glycan_targets` computes candidate m/z values from compositions (for example `N4H5F1S2`) with reducing-end labels and charge states; assignments still need retention time and MS/MS evidence. `cluster/README.md` shows how to run the sweep on a SLURM cluster with a public fetuin and IgG dataset.
+
 From mzML:
 
 ```python
