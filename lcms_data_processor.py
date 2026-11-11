@@ -194,8 +194,20 @@ class MzMLReader:
         Returns:
             DataFrame with index, native_id, type and n_points
         """
+        import pyopenms as oms
+        kinds = oms.ChromatogramSettings.ChromatogramType
+        names = {}
+        for k in dir(kinds):
+            if k.isupper() and k != 'SIZE_OF_CHROMATOGRAM_TYPE':
+                v = getattr(kinds, k)
+                names[int(v) if not hasattr(v, 'value') else v.value] = k
+
+        def kind(c):
+            t = c.getChromatogramType()
+            return names.get(int(t) if not hasattr(t, 'value') else t.value, str(t))
+
         rows = [{'index': i, 'native_id': c.getNativeID(),
-                 'type': str(c.getChromatogramType()).split('.')[-1],
+                 'type': kind(c),
                  'n_points': c.size()}
                 for i, c in enumerate(self.experiment.getChromatograms())]
         return pd.DataFrame(rows, columns=['index', 'native_id', 'type', 'n_points'])
