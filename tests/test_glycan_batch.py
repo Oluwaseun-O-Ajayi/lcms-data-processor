@@ -258,3 +258,26 @@ def test_glycan_search_finds_known_composition(tmp_path):
     best = res.iloc[0]
     assert best["composition"] == "N5H6S3" and best["charge"] == 3
     assert abs(best["error_ppm"]) < 5
+
+
+def test_mixed_adducts():
+    assert gt.parse_adducts("2H+Na") == {"H": 2, "Na": 1}
+    assert gt.glycan_mz_adducts("N4H3F1", "2H", "2-AB") == pytest.approx(gt.glycan_mz("N4H3F1", 2, "2-AB"), abs=1e-9)
+    # [M+H+Na]2+ sits (Na+ - H+)/2 = 10.99097 above [M+2H]2+
+    diff = gt.glycan_mz_adducts("N5H6S1", "H+Na", "2-AB") - gt.glycan_mz_adducts("N5H6S1", "2H", "2-AB")
+    assert diff == pytest.approx((gt.ADDUCT["Na"] - gt.PROTON) / 2, abs=1e-9)
+    # observed in the fetuin run: A3G3S1 [M+H+Na]2+ at 1220.4440
+    assert abs(gt.glycan_mz_adducts("N5H6S1", "H+Na", "2-AB") - 1220.4440) / 1220.444 * 1e6 < 3
+    with pytest.raises(ValueError):
+        gt.parse_adducts("2K")
+
+
+def test_mass_errors_on_synthetic_run(mzml):
+    import mass_errors as me
+    t = pd.DataFrame({"name": list(ANALYTES), "mz": [v["mz"] for v in ANALYTES.values()],
+                      "rt_min": [v["rt_min"] - 0.5 for v in ANALYTES.values()],
+                      "rt_max": [v["rt_min"] + 0.5 for v in ANALYTES.values()]})
+    res = me.mass_errors(MzMLReader(mzml), t, search_ppm=10)
+    # Synthetic analytes are written at their exact m/z
+    assert res["error_ppm"].abs().max() < 0.5
+    assert (res["apex_rt"] - t["rt_min"] - 0.5).abs().max() < 0.05

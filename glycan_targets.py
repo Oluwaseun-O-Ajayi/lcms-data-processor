@@ -100,6 +100,29 @@ def glycan_mz(composition, charge=1, label='none', adduct='H'):
     return (glycan_mass(composition, label) + charge * ADDUCT[adduct]) / charge
 
 
+def parse_adducts(text):
+    """
+    Parse an adduct set such as '2H', 'H+Na' or '2H+NH4' into counts; the charge is the total.
+
+    >>> parse_adducts('2H+Na')
+    {'H': 2, 'Na': 1}
+    """
+    counts = {}
+    for part in str(text).split('+'):
+        m = re.fullmatch(r'(\d*)(H|Na|NH4)', part.strip())
+        if not m:
+            raise ValueError(f"Cannot parse adduct set '{text}'. Use e.g. 2H, H+Na, 2H+NH4")
+        counts[m.group(2)] = counts.get(m.group(2), 0) + int(m.group(1) or 1)
+    return counts
+
+
+def glycan_mz_adducts(composition, adducts, label='none'):
+    """m/z of [M + adducts]^z+ for a mixed adduct set such as 'H+Na' (z = number of adducts)."""
+    counts = parse_adducts(adducts)
+    z = sum(counts.values())
+    return (glycan_mass(composition, label) + sum(ADDUCT[k] * n for k, n in counts.items())) / z
+
+
 def target_table(compositions, label='none', charges=(1, 2), adduct='H'):
     """
     Build an XIC target table.
