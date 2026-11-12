@@ -220,3 +220,19 @@ def test_fld_sums_peaks_for_each_ms_apex():
     assert row.loc["P", "fld_area"] == pytest.approx(40, rel=0.03)
     assert (table["status"] == "matched").all()
     assert s["mean_abs_diff_pct_points"] < 1.0  # MS 40/60 vs FLD 40/60
+
+
+def test_large_free_label_peak_does_not_hide_glycan_fld_peaks():
+    t = np.arange(0, 45, 0.005)
+    g = lambda mu, area, s=0.08: area / (s * np.sqrt(2 * np.pi)) * np.exp(-0.5 * ((t - mu) / s) ** 2)
+
+    class FakeReader:
+        def chromatogram(self, match):  # free 2-AB at 2 min, 500x the glycan peaks
+            return pd.DataFrame({"time": t, "intensity": g(2.0, 20000) + g(19.4, 30) + g(23.6, 10)})
+
+    ms = pd.DataFrame({"glycan": ["S1", "S2"], "ppm": 10.0, "width": 5, "baseline_window": 0.1,
+                       "peak_area": [3.0, 1.0], "retention_time": [19.43, 23.63]})
+    table, s = rc.compare_fld(FakeReader(), ms, "FLD", 10, 5, 0.1, delay=0.03)
+    assert (table["status"] == "matched").all()
+    assert s["fld_region_min"] > 2.5
+    assert s["mean_abs_diff_pct_points"] < 1.0

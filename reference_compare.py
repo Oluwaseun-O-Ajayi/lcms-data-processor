@@ -106,7 +106,8 @@ def ms_apexes(setting, merge=0.05):
 
 
 def compare_fld(reader, targets_long, fld_match, ppm, width, baseline_window,
-                delay=None, tolerance=0.1, max_lag=1.0, fld_width=5, fld_baseline_window=0.1):
+                delay=None, tolerance=0.1, max_lag=1.0, fld_width=5, fld_baseline_window=0.1,
+                fld_prominence=0.02, margin=2.0, return_peaks=False):
     setting = pick_setting(targets_long, ppm, width, baseline_window)
     ms = ms_glycan_table(targets_long, setting)
     fld = reader.chromatogram(fld_match)
@@ -118,8 +119,13 @@ def compare_fld(reader, targets_long, fld_match, ppm, width, baseline_window,
     else:
         score = np.nan
 
-    det = PeakDetector(fld)
-    det.detect_peaks(width=fld_width, baseline_window=fld_baseline_window)
+    # Detect fluorescence peaks only where the target glycans elute (plus a margin), so the
+    # free-label peak and other large early signals do not set the detection threshold.
+    lo = ms['ms_rt'].min() - delay - margin
+    hi = ms['ms_rt'].max() - delay + margin
+    region = fld[(fld['time'] >= lo) & (fld['time'] <= hi)].reset_index(drop=True)
+    det = PeakDetector(region)
+    det.detect_peaks(prominence=fld_prominence, width=fld_width, baseline_window=fld_baseline_window)
     det.integrate_peaks()
     peaks = det.peaks.reset_index(drop=True)
 
@@ -155,7 +161,10 @@ def compare_fld(reader, targets_long, fld_match, ppm, width, baseline_window,
         ms.loc[ok, 'fld_pct'] = 100 * ms.loc[ok, 'fld_area'] / ms.loc[ok, 'fld_area'].sum()
     summary = agreement(ms.loc[ok, 'ms_pct'], ms.loc[ok, 'fld_pct']) if ok.sum() else {'n': 0}
     summary.update({'delay_min': delay, 'delay_correlation': score, 'ppm': ppm, 'width': width,
-                    'baseline_window': baseline_window})
+                    'baseline_window': baseline_window, 'fld_region_min': lo, 'fld_region_max': hi,
+                    'fld_peaks_detected': len(peaks)})
+    if return_peaks:
+        return ms, summary, peaks
     return ms, summary
 
 
@@ -224,6 +233,11 @@ def build_parser():
     f.add_argument('--delay', type=float, help='FLD-to-MS delay in minutes (default: estimate)')
     f.add_argument('--tolerance', type=float, default=0.1, help='max RT difference for matching (min)')
     f.add_argument('--max-lag', type=float, default=1.0, help='delay search range (min)')
+    f.add_argument('--fld-prominence', type=float, default=0.02,
+                   help='FLD peak prominence as a fraction of the largest peak in the glycan region')
+    f.add_argument('--fld-width', type=int, default=5, help='minimum FLD peak width (points)')
+    f.add_argument('--margin', type=float, default=2.0,
+                   help='FLD region extends this many minutes beyond the first and last glycan')
     f.add_argument('--list', action='store_true', help='only list the chromatograms in the file')
     f.add_argument('--out', default='results/fld')
     _setting_args(f)
@@ -261,9 +275,12 @@ def main(argv=None):
             print(reader.list_chromatograms().to_string(index=False))
             return
         fld_match = int(a.fld) if a.fld.isdigit() else a.fld
-        table, summary = compare_fld(reader, pd.read_csv(a.targets), fld_match, a.ppm, a.width,
-                                     a.baseline_window, a.delay, a.tolerance, a.max_lag)
+        table, summary, peaks = compare_fld(reader, pd.read_csv(a.targets), fld_match, a.ppm, a.width,
+                                            a.baseline_window, a.delay, a.tolerance, a.max_lag,
+                                            fld_width=a.fld_width, fld_prominence=a.fld_prominence,
+                                            margin=a.margin, return_peaks=True)
         table.to_csv(f"{out}_per_glycan.csv", index=False)
+        peaks.to_csv(f"{out}_fld_peaks.csv", index=False)
         print(table[['glycan', 'ms_rt', 'fld_rts', 'status', 'ms_pct', 'fld_pct']].to_string(index=False))
         _write_summary(summary, f"{out}_summary.csv")
     else:
