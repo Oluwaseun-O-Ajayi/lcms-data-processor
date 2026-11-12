@@ -281,3 +281,28 @@ def test_mass_errors_on_synthetic_run(mzml):
     # Synthetic analytes are written at their exact m/z
     assert res["error_ppm"].abs().max() < 0.5
     assert (res["apex_rt"] - t["rt_min"] - 0.5).abs().max() < 0.05
+
+
+def test_survey_finds_glycan_with_isotope_and_rejects_lone_peak(tmp_path):
+    import pyopenms as oms
+    import glycan_search as gs
+    real = gt.glycan_mz("N5H6S3", 3, label="2-AB")
+    lone = gt.glycan_mz("N4H5S1", 2, label="2-AB")  # monoisotopic peak only, no isotope
+    exp = oms.MSExperiment()
+    rng = np.random.default_rng(5)
+    for rt_s in np.arange(0, 600, 1.0):
+        s = oms.MSSpectrum(); s.setRT(float(rt_s)); s.setMSLevel(1)
+        mz = list(rng.uniform(400, 2000, 30)); it = list(rng.exponential(50, 30))
+        if 240 <= rt_s < 300:
+            for k, frac in enumerate([1.0, 1.1, 0.7]):
+                mz.append(real + k * gs.ISOTOPE_SPACING / 3); it.append(1e5 * frac)
+            mz.append(lone); it.append(1e5)
+        o = np.argsort(mz)
+        s.set_peaks((np.array(mz)[o], np.array(it)[o])); exp.addSpectrum(s)
+    oms.MzMLFile().store(str(tmp_path / "v.mzML"), exp)
+    hits = gs.survey(MzMLReader(tmp_path / "v.mzML"), "2-AB", (2, 3), ppm=10, step=0.5)
+    summ = gs.summarize_survey(hits)
+    top = summ.iloc[0]
+    assert top["composition"] == "N5H6S3" and "3" in top["charges_seen"]
+    assert 4.0 <= top["apex_rt"] <= 5.0
+    assert "N4H5S1" not in set(summ["composition"])
