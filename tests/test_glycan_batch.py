@@ -318,3 +318,13 @@ def test_skyline_report_with_adduct_column_and_molecule_header():
     assert s["n_precursors"] == 4
     assert s["median_area_ratio"] == pytest.approx(0.5)
     assert s["mean_abs_diff_pct_points"] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_small_target_peak_next_to_large_isobaric_peak_is_detected():
+    t = np.arange(0, 45, 0.01)
+    g = lambda mu, area, s=0.1: area / (s * np.sqrt(2 * np.pi)) * np.exp(-0.5 * ((t - mu) / s) ** 2)
+    y = g(29.2, 300) + g(31.7, 10000)  # early isomer 3% of the late one, same m/z
+    early, _ = lcms_batch.best_peak(t, y, 28.6, 29.8, 5, 0.1, 0.1, "sum")
+    late, _ = lcms_batch.best_peak(t, y, 31.1, 32.3, 5, 0.1, 0.1, "sum")
+    assert early is not None and early["peak_area"] == pytest.approx(300, rel=0.05)
+    assert late["peak_area"] == pytest.approx(10000, rel=0.03)

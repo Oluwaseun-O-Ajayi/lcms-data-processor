@@ -63,7 +63,9 @@ def best_peak(times, intensity, rt_min, rt_max, width, baseline_window, prominen
     if np.nanmax(intensity) <= 0:
         return None, 0
     det = PeakDetector(chrom)
-    peaks = det.detect_peaks(prominence=prominence, width=width, baseline_window=baseline_window)
+    window = (rt_min if np.isfinite(rt_min) else -np.inf, rt_max if np.isfinite(rt_max) else np.inf)
+    peaks = det.detect_peaks(prominence=prominence, width=width, baseline_window=baseline_window,
+                             threshold_range=window if np.isfinite(rt_min) or np.isfinite(rt_max) else None)
     if peaks.empty:
         return None, 0
     det.integrate_peaks()

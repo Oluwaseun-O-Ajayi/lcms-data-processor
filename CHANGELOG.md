@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `lcms-batch --peak-mode sum`: integrate every peak inside a target's retention window (for partly resolved isomers).
+- `PeakDetector.detect_peaks(threshold_range=...)`: relative detection thresholds scaled to the target's retention window; `lcms-batch` uses it whenever a window is given, so a small peak next to a much larger peak at the same m/z is still detected (found by cross-checking against Skyline).
+- `glycan_targets.parse_adducts` and `glycan_mz_adducts`: mixed adduct sets such as `H+Na` and `2H+Na`.
+- `lcms-glycan-search`: composition search for unassigned peaks, and `--survey` for a whole-run composition survey with isotope and monoisotopic checks.
+- `examples/mass_errors.py`: measured ppm error of each target ion.
+- Fluorescence comparison matches every MS apex of a glycan, sums the matched fluorescence peaks, restricts fluorescence peak detection to the glycan elution region, and writes the detected fluorescence peaks.
+- Skyline comparison reads the charge from Skyline's `Precursor Adduct` column and accepts the `Molecule` header.
+- Cluster job files for the fetuin case study (`cluster/sweep.slurm`, `cluster/extras.slurm`) and target lists.
+
 ## 1.3.0 (2026-11)
 
 ### Added

@@ -280,7 +280,7 @@ class PeakDetector:
         self.baseline = None
     
     def detect_peaks(self, prominence=0.1, width=5, height=None, baseline_window=0.1,
-                     limit_halfwidths=3.4):
+                     limit_halfwidths=3.4, threshold_range=None):
         """
         Detect peaks with scipy.signal.find_peaks on the baseline-corrected trace.
 
@@ -291,6 +291,10 @@ class PeakDetector:
             height: minimum corrected height (absolute); default is the larger of 5% of the
                 largest corrected intensity and three noise standard deviations
             baseline_window: baseline window as a fraction of the number of points
+            threshold_range: optional (start, end) time range; when given, the relative
+                prominence and height thresholds are scaled to the largest corrected signal
+                inside this range instead of the whole trace, so a small target peak next to
+                a much larger peak elsewhere in the run is still detected
 
         Each peak records its apex index, retention time, height, full width at half
         maximum (FWHM, in time units) and the integration limits. Each limit lies
@@ -308,9 +312,15 @@ class PeakDetector:
         # heights and areas are taken from the unsmoothed corrected trace.
         window = 2 * int(width) + 1
         smooth = signal.savgol_filter(corrected, window, 2) if len(corrected) > window else corrected
+        scale = smooth.max()
+        if threshold_range is not None:
+            tt = self.data['time'].to_numpy()
+            inside = (tt >= threshold_range[0]) & (tt <= threshold_range[1])
+            if inside.any():
+                scale = smooth[inside].max()
         if height is None:
-            height = max(0.05 * smooth.max(), 3.0 * self.noise_sd)
-        idx, props = signal.find_peaks(smooth, prominence=max(prominence * smooth.max(), 3.0 * self.noise_sd),
+            height = max(0.05 * scale, 3.0 * self.noise_sd)
+        idx, props = signal.find_peaks(smooth, prominence=max(prominence * scale, 3.0 * self.noise_sd),
                                        width=width, height=height)
         half = signal.peak_widths(smooth, idx, rel_height=0.5)
         t = self.data['time'].to_numpy()
