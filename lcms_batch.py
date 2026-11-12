@@ -50,8 +50,15 @@ def load_targets(args):
     return t.reset_index(drop=True)
 
 
-def best_peak(times, intensity, rt_min, rt_max, width, baseline_window, prominence):
-    """Largest integrated peak in a chromatogram (within the RT window if given)."""
+def best_peak(times, intensity, rt_min, rt_max, width, baseline_window, prominence, mode='largest'):
+    """
+    Integrated signal for one target.
+
+    mode='largest' returns the largest peak (inside the RT window if given).
+    mode='sum' sums every peak inside the RT window, for example partly resolved
+    linkage isomers of one composition; retention time, height, FWHM and S/N are
+    those of the largest peak, and 'peak_rts' lists the apex of every peak summed.
+    """
     chrom = pd.DataFrame({'time': times, 'intensity': intensity})
     if np.nanmax(intensity) <= 0:
         return None, 0
@@ -68,7 +75,15 @@ def best_peak(times, intensity, rt_min, rt_max, width, baseline_window, prominen
         peaks = peaks[peaks['retention_time'] <= rt_max]
     if peaks.empty:
         return None, len(det.peaks)
-    return peaks.loc[peaks['peak_area'].idxmax()], len(det.peaks)
+    best = peaks.loc[peaks['peak_area'].idxmax()].copy()
+    if mode == 'sum':
+        best['peak_area'] = peaks['peak_area'].sum()
+        best['n_summed'] = len(peaks)
+        best['peak_rts'] = ';'.join(f"{t:.4f}" for t in sorted(peaks['retention_time']))
+    else:
+        best['n_summed'] = 1
+        best['peak_rts'] = f"{best['retention_time']:.4f}"
+    return best, len(det.peaks)
 
 
 def run(args):
@@ -87,7 +102,7 @@ def run(args):
             for width, bw in itertools.product(args.width, args.baseline_window):
                 for j, tg in targets.iterrows():
                     peak, n_peaks = best_peak(times, mat[:, j], tg['rt_min'], tg['rt_max'],
-                                              width, bw, args.prominence)
+                                              width, bw, args.prominence, args.peak_mode)
                     rows.append({
                         'file': Path(f).name, 'ppm': ppm, 'width': width, 'baseline_window': bw,
                         'target': tg['name'], 'glycan': tg['glycan'], 'mz': tg['mz'],
@@ -98,6 +113,10 @@ def run(args):
                         'peak_height': None if peak is None else peak['peak_height'],
                         'fwhm': None if peak is None else peak['fwhm'],
                         'snr': None if peak is None else peak['snr'],
+                        'n_summed': 0 if peak is None else int(peak['n_summed']),
+                        'peak_rts': '' if peak is None else peak['peak_rts'],
+                        'rt_min': tg['rt_min'], 'rt_max': tg['rt_max'],
+                        'peak_mode': args.peak_mode,
                     })
         print(f"  done in {time.time() - t0:.1f} s", flush=True)
 
@@ -127,6 +146,8 @@ def build_parser():
     p.add_argument('--baseline-window', type=float, nargs='+', default=[0.1],
                    help='baseline window as a fraction of the run')
     p.add_argument('--prominence', type=float, default=0.1, help='minimum prominence (fraction of max)')
+    p.add_argument('--peak-mode', choices=['largest', 'sum'], default='largest',
+                   help="'largest' peak, or 'sum' of all peaks inside each target's RT window")
     p.add_argument('--ms-level', type=int, default=1)
     p.add_argument('--out', default='results/sweep', help='output prefix')
     return p

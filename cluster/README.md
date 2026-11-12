@@ -35,7 +35,7 @@ sbatch cluster/sweep.slurm
 squeue --me
 ```
 
-Each array task writes three tables per file to `/scratch/$USER/glycan_data/results/`:
+The job writes these tables to `/scratch/$USER/glycan_data/results/`:
 
 | File | Content |
 |---|---|

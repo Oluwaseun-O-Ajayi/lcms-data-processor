@@ -88,6 +88,23 @@ def ms_glycan_table(targets, setting):
     return pd.DataFrame({'ms_area': area, 'ms_rt': apex}).reset_index()
 
 
+def ms_apexes(setting, merge=0.05):
+    """Apex times per glycan across charge states (from 'peak_rts' when present), merged within `merge` min."""
+    out = {}
+    sel = setting[setting['peak_area'] > 0]
+    for g, grp in sel.groupby('glycan'):
+        if 'peak_rts' in grp and grp['peak_rts'].notna().any():
+            rts = [float(x) for v in grp['peak_rts'].dropna().astype(str) for x in v.split(';') if x]
+        else:
+            rts = grp['retention_time'].dropna().astype(float).tolist()
+        merged = []
+        for t in sorted(rts):
+            if not merged or t - merged[-1] > merge:
+                merged.append(t)
+        out[g] = merged
+    return out
+
+
 def compare_fld(reader, targets_long, fld_match, ppm, width, baseline_window,
                 delay=None, tolerance=0.1, max_lag=1.0, fld_width=5, fld_baseline_window=0.1):
     setting = pick_setting(targets_long, ppm, width, baseline_window)
@@ -106,22 +123,30 @@ def compare_fld(reader, targets_long, fld_match, ppm, width, baseline_window,
     det.integrate_peaks()
     peaks = det.peaks.reset_index(drop=True)
 
+    # Every MS apex of a glycan (several when isomer peaks were summed) is matched to the
+    # nearest FLD peak within the tolerance; the glycan's FLD area is the sum of its FLD peaks.
+    apexes = ms_apexes(setting)
     ms['expected_fld_rt'] = ms['ms_rt'] - delay
-    ms['fld_peak_id'] = None
-    ms['fld_rt'] = np.nan
-    ms['fld_area'] = np.nan
-    for i, row in ms.iterrows():
-        if peaks.empty:
-            break
-        dist = (peaks['retention_time'] - row['expected_fld_rt']).abs()
-        j = dist.idxmin()
-        if dist[j] <= tolerance:
-            ms.loc[i, ['fld_peak_id', 'fld_rt', 'fld_area']] = [int(peaks.loc[j, 'peak_id']),
-                                                               peaks.loc[j, 'retention_time'],
-                                                               peaks.loc[j, 'peak_area']]
-    counts = ms['fld_peak_id'].value_counts()
-    ms['status'] = np.where(ms['fld_peak_id'].isna(), 'no FLD peak',
-                            np.where(ms['fld_peak_id'].map(counts).fillna(0) > 1, 'shared FLD peak', 'matched'))
+    claims, fld_ids, fld_rts, fld_area = {}, [], [], []
+    for _, row in ms.iterrows():
+        ids = set()
+        for rt in apexes.get(row['glycan'], [row['ms_rt']]):
+            if peaks.empty:
+                break
+            dist = (peaks['retention_time'] - (rt - delay)).abs()
+            j = dist.idxmin()
+            if dist[j] <= tolerance:
+                ids.add(int(peaks.loc[j, 'peak_id']))
+        for k in ids:
+            claims[k] = claims.get(k, 0) + 1
+        sel = peaks[peaks['peak_id'].isin(ids)]
+        fld_ids.append(';'.join(str(k) for k in sorted(ids)))
+        fld_rts.append(';'.join(f"{t:.3f}" for t in sorted(sel['retention_time'])))
+        fld_area.append(sel['peak_area'].sum() if ids else np.nan)
+    ms['fld_peak_ids'], ms['fld_rts'], ms['fld_area'] = fld_ids, fld_rts, fld_area
+    shared = [any(claims[int(k)] > 1 for k in ids.split(';')) if ids else False for ids in fld_ids]
+    ms['status'] = np.where(ms['fld_peak_ids'] == '', 'no FLD peak',
+                            np.where(shared, 'shared FLD peak', 'matched'))
     ok = ms['status'] == 'matched'
     ms['ms_pct'] = np.nan
     ms['fld_pct'] = np.nan
@@ -239,7 +264,7 @@ def main(argv=None):
         table, summary = compare_fld(reader, pd.read_csv(a.targets), fld_match, a.ppm, a.width,
                                      a.baseline_window, a.delay, a.tolerance, a.max_lag)
         table.to_csv(f"{out}_per_glycan.csv", index=False)
-        print(table[['glycan', 'ms_rt', 'fld_rt', 'status', 'ms_pct', 'fld_pct']].to_string(index=False))
+        print(table[['glycan', 'ms_rt', 'fld_rts', 'status', 'ms_pct', 'fld_pct']].to_string(index=False))
         _write_summary(summary, f"{out}_summary.csv")
     else:
         merged, per_glycan, summary = compare_skyline(pd.read_csv(a.targets), pd.read_csv(a.skyline),

@@ -190,3 +190,33 @@ def test_skyline_round_trip(tmp_path):
     assert s["median_area_ratio"] == pytest.approx(0.5, rel=0.05)
     assert s["spearman_rho_areas"] > 0.98
     assert s["mean_abs_diff_pct_points"] < 0.5
+
+
+def test_sum_mode_adds_isomer_peaks_inside_window_only():
+    t = np.arange(0, 20, 0.005)
+    g = lambda mu, area, s=0.08: area / (s * np.sqrt(2 * np.pi)) * np.exp(-0.5 * ((t - mu) / s) ** 2)
+    y = g(10.0, 3000) + g(10.6, 1000) + g(15.0, 5000)  # isomer pair at 10.0/10.6, other glycan at 15
+    largest, _ = lcms_batch.best_peak(t, y, 9.5, 11.0, 5, 0.1, 0.05, "largest")
+    summed, _ = lcms_batch.best_peak(t, y, 9.5, 11.0, 5, 0.1, 0.05, "sum")
+    assert largest["peak_area"] == pytest.approx(3000, rel=0.03)
+    assert summed["peak_area"] == pytest.approx(4000, rel=0.03)
+    assert summed["n_summed"] == 2 and summed["retention_time"] == pytest.approx(10.0, abs=0.01)
+    assert [float(x) for x in summed["peak_rts"].split(";")] == pytest.approx([10.0, 10.6], abs=0.01)
+
+
+def test_fld_sums_peaks_for_each_ms_apex():
+    t = np.arange(0, 20, 0.005)
+    g = lambda mu, area, s=0.08: area / (s * np.sqrt(2 * np.pi)) * np.exp(-0.5 * ((t - mu) / s) ** 2)
+
+    class FakeReader:
+        def chromatogram(self, match):
+            return pd.DataFrame({"time": t, "intensity": g(9.9, 30) + g(10.5, 10) + g(14.9, 60)})
+
+    ms = pd.DataFrame({"glycan": ["P", "Q"], "ppm": 10.0, "width": 5, "baseline_window": 0.1,
+                       "peak_area": [4.0, 6.0], "retention_time": [10.0, 15.0],
+                       "peak_rts": ["10.0000;10.6000", "15.0000"]})
+    table, s = rc.compare_fld(FakeReader(), ms, "FLD", 10, 5, 0.1, delay=0.1)
+    row = table.set_index("glycan")
+    assert row.loc["P", "fld_area"] == pytest.approx(40, rel=0.03)
+    assert (table["status"] == "matched").all()
+    assert s["mean_abs_diff_pct_points"] < 1.0  # MS 40/60 vs FLD 40/60
