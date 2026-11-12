@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=32G
 #SBATCH --time=12:00:00
-#SBATCH --array=0-1
+#SBATCH --array=0-0
 #SBATCH --output=logs/%x_%A_%a.out
 #
 # One array task per mzML file; each task sweeps the full settings grid.
@@ -13,7 +13,7 @@
 # Set the array range to 0-(number of files - 1).
 #
 # One-time setup (on a login node):
-#   module load Python          # check available versions with: module spider Python
+#   module load Python/3.11.3-GCCcore-12.3.0
 #   python -m venv ~/venvs/lcms && source ~/venvs/lcms/bin/activate
 #   pip install -e ".[mzml]"
 set -euo pipefail
@@ -21,7 +21,7 @@ set -euo pipefail
 DATA=/scratch/$USER/glycan_data/mzml
 OUT=/scratch/$USER/glycan_data/results
 
-module load Python
+module load Python/3.11.3-GCCcore-12.3.0
 source ~/venvs/lcms/bin/activate
 mkdir -p "$OUT"
 
