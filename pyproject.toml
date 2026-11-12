@@ -28,11 +28,12 @@ Homepage = "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"
 Issues = "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor/issues"
 
 [tool.setuptools]
-py-modules = ["lcms_data_processor", "glycan_targets", "lcms_batch", "reference_compare"]
+py-modules = ["lcms_data_processor", "glycan_targets", "lcms_batch", "reference_compare", "glycan_search"]
 
 [project.scripts]
 lcms-batch = "lcms_batch:main"
 lcms-compare = "reference_compare:main"
+lcms-glycan-search = "glycan_search:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

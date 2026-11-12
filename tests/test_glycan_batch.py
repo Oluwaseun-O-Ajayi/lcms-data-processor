@@ -236,3 +236,25 @@ def test_large_free_label_peak_does_not_hide_glycan_fld_peaks():
     assert (table["status"] == "matched").all()
     assert s["fld_region_min"] > 2.5
     assert s["mean_abs_diff_pct_points"] < 1.0
+
+
+def test_glycan_search_finds_known_composition(tmp_path):
+    import pyopenms as oms
+    import glycan_search as gs
+    target = gt.glycan_mz("N5H6S3", 3, label="2-AB")  # A3G3S3 3+
+    exp = oms.MSExperiment()
+    rng = np.random.default_rng(3)
+    for rt_s in np.arange(0, 120, 1.0):
+        s = oms.MSSpectrum()
+        s.setRT(float(rt_s))
+        s.setMSLevel(1)
+        mz = np.sort(np.append(rng.uniform(400, 2000, 30), target * (1 + 2e-6)))
+        inten = np.where(np.isclose(mz, target * (1 + 2e-6)), 1e5, rng.exponential(100, len(mz)))
+        s.set_peaks((mz, inten))
+        exp.addSpectrum(s)
+    oms.MzMLFile().store(str(tmp_path / "s.mzML"), exp)
+    spec = gs.summed_spectrum(MzMLReader(tmp_path / "s.mzML"), 0.5, 1.5)
+    res = gs.search(spec, "2-AB", (1, 2, 3), ppm=10, top=3)
+    best = res.iloc[0]
+    assert best["composition"] == "N5H6S3" and best["charge"] == 3
+    assert abs(best["error_ppm"]) < 5
