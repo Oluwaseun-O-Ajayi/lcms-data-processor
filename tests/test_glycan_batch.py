@@ -306,3 +306,15 @@ def test_survey_finds_glycan_with_isotope_and_rejects_lone_peak(tmp_path):
     assert top["composition"] == "N5H6S3" and "3" in top["charges_seen"]
     assert 4.0 <= top["apex_rt"] <= 5.0
     assert "N4H5S1" not in set(summ["composition"])
+
+
+def test_skyline_report_with_adduct_column_and_molecule_header():
+    ours = pd.DataFrame({"glycan": ["X", "X", "Y", "Y"], "charge": [2, 3, 2, 3], "target": ["X_2+", "X_3+", "Y_2+", "Y_3+"],
+                         "ppm": 10.0, "width": 5, "baseline_window": 0.1, "peak_area": [10.0, 5.0, 30.0, 20.0]})
+    report = pd.DataFrame({"Molecule": ["X", "X", "Y", "Y"],
+                           "Precursor Adduct": ["[M+2]", "[M1.00785+3]", "[M+2]", "[M1.00783+3]"],
+                           "Total Area MS1": [20.0, 10.0, 60.0, 40.0]})
+    _, per, s = rc.compare_skyline(ours, report, 10, 5, 0.1)
+    assert s["n_precursors"] == 4
+    assert s["median_area_ratio"] == pytest.approx(0.5)
+    assert s["mean_abs_diff_pct_points"] == pytest.approx(0.0, abs=1e-9)

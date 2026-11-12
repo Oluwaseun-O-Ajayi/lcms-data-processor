@@ -191,6 +191,12 @@ def compare_skyline(targets_long, report, ppm, width, baseline_window, area_col=
     setting = pick_setting(targets_long, ppm, width, baseline_window).copy()
     if 'charge' not in setting or setting['charge'].isna().all():
         setting['charge'] = setting['target'].str.extract(r'_(\d+)\+$')[0].astype(float)
+    report = report.copy()
+    if 'Molecule Name' not in report and 'Molecule' in report:
+        report['Molecule Name'] = report['Molecule']
+    if 'Precursor Charge' not in report and 'Precursor Adduct' in report:
+        # Skyline adducts such as [M+2], [M+2H] or [M1.00785+3]: the charge is the trailing number
+        report['Precursor Charge'] = report['Precursor Adduct'].astype(str).str.extract(r'(\d+)\]$')[0].astype(float)
     area_col = area_col or next((c for c in AREA_COLUMNS if c in report), None)
     need = {'Molecule Name', 'Precursor Charge'}
     if area_col is None or not need <= set(report.columns):
