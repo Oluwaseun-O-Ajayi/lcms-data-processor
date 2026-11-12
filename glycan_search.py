@@ -148,6 +148,8 @@ def main(argv=None):
     p.add_argument('--step', type=float, default=0.25, help='survey slice width (min)')
     p.add_argument('--min-rel', type=float, default=0.002, help='survey intensity threshold (fraction)')
     p.add_argument('--fld', help='survey: also list fluorescence peaks of this chromatogram (e.g. FLD1)')
+    p.add_argument('--fld-start', type=float, default=5.0,
+                   help='survey: ignore fluorescence before this time (min), where free label elutes')
     p.add_argument('--label', default='2-AB')
     p.add_argument('--charges', type=int, nargs='+', default=[1, 2, 3])
     p.add_argument('--ppm', type=float, default=10.0)
@@ -165,13 +167,16 @@ def main(argv=None):
             print(summary.to_string(index=False, float_format=lambda x: f"{x:.3f}"))
         if a.fld:
             from lcms_data_processor import PeakDetector
-            det = PeakDetector(reader.chromatogram(a.fld))
-            det.detect_peaks(prominence=0.005, width=5)
+            fld = reader.chromatogram(a.fld)
+            # Skip the free-label/void region so its peak does not set the detection threshold.
+            fld = fld[fld['time'] >= a.fld_start].reset_index(drop=True)
+            det = PeakDetector(fld)
+            det.detect_peaks(prominence=0.01, width=5)
             det.integrate_peaks()
             fp = det.peaks[['retention_time', 'peak_height', 'peak_area', 'fwhm']]
             if a.out:
                 fp.to_csv(a.out.replace('.csv', '_fld_peaks.csv'), index=False)
-            print("\nFluorescence peaks over the whole run:")
+            print(f"\nFluorescence peaks from {a.fld_start} min to the end of the run:")
             print(fp.to_string(index=False, float_format=lambda x: f"{x:.3f}"))
         return
     if not a.rt:
