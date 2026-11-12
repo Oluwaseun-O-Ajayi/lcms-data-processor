@@ -94,3 +94,12 @@ detector traces, or export the FLD trace as CSV from the vendor software.
 
 Skyline menus and setting names change between versions; check them against the
 version you use and record it in the methods.
+
+## Fetuin target list (`cluster/fetuin_2AB_targets.csv`)
+
+Eight species, one per fluorescence peak between 17 and 42 min, each extracted as [M+2H]2+
+and [M+3H]3+ with a ±0.6 min retention window around the observed MS apex. Assignments
+come from accurate mass (monoisotopic ions within 4 ppm at both charge states) and
+co-elution with a fluorescence peak. Early- and late-eluting isomers of A3G3S2 and A3G3S3
+share a composition and are most likely sialic acid linkage isomers; MS1 data alone do not
+assign the linkage. m/z 922.0098 throughout the run is the Agilent reference mass (HP-0921).
