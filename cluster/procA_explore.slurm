@@ -40,7 +40,7 @@ PY
     *Dex*)
       python examples/mass_errors.py --mzml "$f" --targets cluster/procA_dextran_targets.csv \
         --out "$OUT/${short}_dextran_ladder.csv" ;;
-    *Fet*)
+    *Fet*|*ferin*|*Tfr*|*Trnsf*)
       lcms-glycan-search --mzml "$f" --survey --label procainamide --charges 2 3 4 --ppm 20 \
         --out "$OUT/${short}_survey.csv" > /dev/null ;;
   esac
