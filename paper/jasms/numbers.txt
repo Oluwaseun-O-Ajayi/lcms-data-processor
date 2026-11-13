@@ -26,17 +26,25 @@ MS/FLD by antennae, NeuAc: 2.0-ant 1.0 NeuAc 1.46; 2.0-ant 2.0 NeuAc 1.80; 3.0-a
 
 == Procainamide runs
 FET-ProA-S1: all ions n 16 median -5.2; ions with >= 20 centroids n 11, median -5.2, range -10.7 to +1.2 ppm
-TFN-ProA: all ions n 22 median -6.7; ions with >= 20 centroids n 11, median -6.4, range -10.3 to +0.8 ppm
 FET-ProA-S2: all ions n 17 median -7.9; ions with >= 20 centroids n 12, median -7.7, range -12.5 to -2.2 ppm
+TFN-ProA: all ions n 22 median -6.7; ions with >= 20 centroids n 11, median -6.4, range -10.3 to +0.8 ppm
 DEX-ProA: all ions n 26 median -4.1; ions with >= 20 centroids n 9, median -6.6, range -13.8 to -0.0 ppm
 all glycan ions >= 20 centroids: n 34, median -6.7, 32 of 34 negative, 4 beyond 10 ppm
 2-AB ions (2+/3+): n 16, all within -0.13 to +4.02 ppm
-fetuin 10 ppm: A2G2 31.3/12.9, A2G2S1 2.4/4.0, A2G2S2 1.2/0.6, A3G3 8.4/28.5, A3G3S1 42.8/43.0, A3G3S2 8.0/8.9, A3G3S3 5.8/2.1, A3G3S4 0.1/0.1
-fetuin 20 ppm: A2G2 15.0/7.2, A2G2S1 4.6/6.6, A2G2S2 1.2/0.5, A3G3 9.6/30.8, A3G3S1 35.0/38.1, A3G3S2 28.9/14.9, A3G3S3 5.6/1.8, A3G3S4 0.0/0.0
-FET-ProA-S1: largest change 10->20 ppm 20.9 points (A3G3S2)
-FET-ProA-S2: largest change 10->20 ppm 6.1 points (A3G3S2)
-TFN-ProA: largest change 10->20 ppm 14.1 points (A2G2)
-FET-ProA-S1 (20 ppm): 1.17 NeuAc per glycan, asialo 24.6%
-FET-ProA-S2 (20 ppm): 0.81 NeuAc per glycan, asialo 38.0%
-TFN-ProA (20 ppm): 0.74 NeuAc per glycan; A2G2S1 55.5, A2G2 14.9, A2G1S1 7.7, A3G3 5.4, FA2G2 4.5, FA2G2S1 4.1, A2G1 3.6, A2G2S2 2.2, A3G3S1 1.7, FA2G2S2 0.3, A3G3S2 0.2
+FET-ProA-S1: largest change between consecutive windows: 10->20 20.9 (A3G3S2), 20->30 8.4 (A3G3), 30->50 8.7 (A3G3); 10->50 22.4
+FET-ProA-S1 ±10 ppm: 0.81 NeuAc per glycan, asialo 39.7%, A2G2 31.3, A3G3 8.4, A3G3S1 42.8, A3G3S2 8.0
+FET-ProA-S1 ±20 ppm: 1.17 NeuAc per glycan, asialo 24.6%, A2G2 15.0, A3G3 9.6, A3G3S1 35.0, A3G3S2 28.9
+FET-ProA-S1 ±30 ppm: 0.99 NeuAc per glycan, asialo 30.3%, A2G2 12.4, A3G3 17.9, A3G3S1 38.1, A3G3S2 21.6
+FET-ProA-S1 ±50 ppm: 0.89 NeuAc per glycan, asialo 35.6%, A2G2 8.9, A3G3 26.7, A3G3S1 36.5, A3G3S2 17.5
+FET-ProA-S2: largest change between consecutive windows: 10->20 6.1 (A3G3S2), 20->30 3.7 (A3G3S2), 30->50 2.7 (A3G3S2); 10->50 7.1
+FET-ProA-S2 ±10 ppm: 0.73 NeuAc per glycan, asialo 41.4%, A2G2 12.9, A3G3 28.5, A3G3S1 43.0, A3G3S2 8.9
+FET-ProA-S2 ±20 ppm: 0.81 NeuAc per glycan, asialo 38.0%, A2G2 7.2, A3G3 30.8, A3G3S1 38.1, A3G3S2 14.9
+FET-ProA-S2 ±30 ppm: 0.90 NeuAc per glycan, asialo 35.1%, A2G2 7.7, A3G3 27.4, A3G3S1 36.7, A3G3S2 18.6
+FET-ProA-S2 ±50 ppm: 0.86 NeuAc per glycan, asialo 35.9%, A2G2 7.7, A3G3 28.2, A3G3S1 38.3, A3G3S2 16.0
+largest |S2 - S1| by window: ±10 20.0 (A3G3), ±20 21.3 (A3G3), ±30 9.4 (A3G3), ±50 1.9 (A3G3S1)
+TFN-ProA: largest change between consecutive windows: 10->20 14.1 (A2G2), 20->30 16.2 (A2G2S1), 30->50 5.5 (A2G2S1)
+TFN-ProA A2G2S1: ±10 41.6, ±20 55.5, ±30 39.3, ±50 33.8
+TFN-ProA A2G2: ±10 29.0, ±20 14.9, ±30 30.9, ±50 34.3
+TFN-ProA A2G2S2: ±10 3.4, ±20 2.2, ±30 4.7, ±50 7.7
+TFN-ProA A2G2 2+ area by window: ±10 2.16e+05, ±20 2.28e+05, ±30 8.16e+05, ±50 1.09e+06
 QC: included signal 6.93e+07-2.51e+08, ACN ratio 0.048-0.200; excluded signal 8.49e+04-4.03e+06, ACN ratio 0.493-8.285; gap 17.2-fold; 2-AB signal max 0.0

@@ -228,24 +228,25 @@ say(f"2-AB ions (2+/3+): n {len(m)}, all within {m.error_ppm.min():+.2f} to {m.e
 
 fc = pd.read_csv(DP / "fetuin_comparison.csv")
 tf = pd.read_csv(DP / "transferrin_profile.csv")
-for ppm in (10, 20):
-    f = fc[fc.ppm == ppm].set_index("glycan")
-    say(f"fetuin {ppm} ppm: " + ", ".join(f"{g} {f.loc[g, 'FET-ProA-S1']:.1f}/{f.loc[g, 'FET-ProA-S2']:.1f}" for g in f.index))
+WIN = sorted(fc.ppm.unique())
 for nm in ("FET-ProA-S1", "FET-ProA-S2"):
     w = fc.pivot(index="glycan", columns="ppm", values=nm)
-    dd = (w[20.0] - w[10.0]).abs()
-    say(f"{nm}: largest change 10->20 ppm {dd.max():.1f} points ({dd.idxmax()})")
-w = tf.pivot(index="glycan", columns="ppm", values="relative_abundance_pct")
-dd = (w[20.0] - w[10.0]).abs()
-say(f"TFN-ProA: largest change 10->20 ppm {dd.max():.1f} points ({dd.idxmax()})")
-f20 = fc[fc.ppm == 20].set_index("glycan")
-for nm in ("FET-ProA-S1", "FET-ProA-S2"):
-    sia = (f20[nm] * f20.index.map(SIALIC)).sum() / 100
-    asialo = f20.loc[["A2G2", "A3G3"], nm].sum()
-    say(f"{nm} (20 ppm): {sia:.2f} NeuAc per glycan, asialo {asialo:.1f}%")
-t20 = tf[tf.ppm == 20].set_index("glycan")
-sia = (t20.relative_abundance_pct * t20.index.map(SIALIC)).sum() / 100
-say(f"TFN-ProA (20 ppm): {sia:.2f} NeuAc per glycan; " + ", ".join(f"{g} {v:.1f}" for g, v in t20.relative_abundance_pct.sort_values(ascending=False).items()))
+    steps = ", ".join(f"{a:g}->{b:g} {(w[b] - w[a]).abs().max():.1f} ({(w[b] - w[a]).abs().idxmax()})" for a, b in zip(WIN, WIN[1:]))
+    say(f"{nm}: largest change between consecutive windows: {steps}; 10->50 {(w[WIN[-1]] - w[WIN[0]]).abs().max():.1f}")
+    for p_ in WIN:
+        sia = (w[p_] * w.index.map(SIALIC)).sum() / 100
+        say(f"{nm} ±{p_:g} ppm: {sia:.2f} NeuAc per glycan, asialo {w.loc[['A2G2', 'A3G3'], p_].sum():.1f}%, "
+            + ", ".join(f"{g} {w.loc[g, p_]:.1f}" for g in ["A2G2", "A3G3", "A3G3S1", "A3G3S2"]))
+dd = fc.pivot(index="glycan", columns="ppm", values="difference_pct_points").abs()
+say("largest |S2 - S1| by window: " + ", ".join(f"±{p_:g} {dd[p_].max():.1f} ({dd[p_].idxmax()})" for p_ in WIN))
+t = tf.pivot(index="glycan", columns="ppm", values="relative_abundance_pct")
+steps = ", ".join(f"{a:g}->{b:g} {(t[b] - t[a]).abs().max():.1f} ({(t[b] - t[a]).abs().idxmax()})" for a, b in zip(WIN, WIN[1:]))
+say(f"TFN-ProA: largest change between consecutive windows: {steps}")
+for g in ["A2G2S1", "A2G2", "A2G2S2"]:
+    say(f"TFN-ProA {g}: " + ", ".join(f"±{p_:g} {t.loc[g, p_]:.1f}" for p_ in WIN))
+tg = pd.read_csv(DP / "TFN-ProA_targets.csv")
+a2 = tg[tg.target == "A2G2_2+"].set_index("ppm").peak_area
+say("TFN-ProA A2G2 2+ area by window: " + ", ".join(f"±{p_:g} {a2[p_]:.3g}" for p_ in WIN))
 
 qc = pd.read_csv(DP / "qc_summary.csv").dropna(subset=["procainamide_signal"])
 inc, exc = qc[qc.role == "included"], qc[qc.role == "excluded"]
@@ -254,8 +255,11 @@ say(f"QC: included signal {inc.procainamide_signal.min():.2e}-{inc.procainamide_
     f"gap {inc.procainamide_signal.min() / exc.procainamide_signal.max():.1f}-fold; 2-AB signal max {qc['2AB_signal'].max()}")
 
 # ------------------------------------------------------------------ Figure 3
-fig, axs = plt.subplots(1, 3, figsize=(7.0, 2.7), gridspec_kw={"width_ratios": [1.05, 1.15, 1]})
-a, b, c = axs
+fig = plt.figure(figsize=(7.0, 5.0))
+gs = fig.add_gridspec(2, 5, height_ratios=[1.15, 1], hspace=0.5, wspace=0.75)
+a = fig.add_subplot(gs[0, 0:3])
+c = fig.add_subplot(gs[0, 3:5])
+c.set_position(c.get_position())
 runs = [("FET-2AB-CRL", m.assign(sample="FET-2AB-CRL")), ("FET-ProA-S1", mp[mp["sample"] == "FET-ProA-S1"]),
         ("FET-ProA-S2", mp[mp["sample"] == "FET-ProA-S2"]), ("TFN-ProA", mp[mp["sample"] == "TFN-ProA"]),
         ("DEX-ProA", dex)]
@@ -268,34 +272,14 @@ for i, (nm, g) in enumerate(runs):
     a.plot(i + rng.uniform(-0.18, 0.18, len(good)), good.error_ppm, "o", ms=3.4, color=col, mec="white", mew=0.4, zorder=3)
     a.plot([i - 0.28, i + 0.28], [good.error_ppm.median()] * 2, color=INK, lw=1.2, zorder=4)
 a.set_xticks(range(len(runs)))
-a.set_xticklabels([r[0] for r in runs], fontsize=6, rotation=35, ha="right", rotation_mode="anchor")
+a.set_xticklabels([r[0] for r in runs], fontsize=6.3)
 a.set_ylabel("Mass error (ppm)")
 a.set_ylim(-21, 8)
 a.text(4.45, 9.2, "±10 ppm window", fontsize=6, color=INK2, ha="right", va="top")
 a.legend(handles=[Line2D([], [], ls="", marker="o", color=CAT[1], ms=4, label="2-AB, Agilent Q-TOF"),
                   Line2D([], [], ls="", marker="o", color=CAT[0], ms=4, label="Procainamide, SLIM IM-Q-TOF")],
          frameon=False, loc="lower left", fontsize=6, handletextpad=0.2)
-tag(a, "A", x=-0.25)
-
-GORDER = ["A2G2", "A3G3", "A2G2S1", "A3G3S1", "A2G2S2", "A3G3S2", "A3G3S3", "A3G3S4"]
-yy = np.arange(len(GORDER))[::-1]
-for k, (nm, off) in enumerate([("FET-ProA-S1", 0.16), ("FET-ProA-S2", -0.16)]):
-    w = fc.pivot(index="glycan", columns="ppm", values=nm).reindex(GORDER)
-    b.hlines(yy + off, w[10.0], w[20.0], color=GRID, lw=1.6, zorder=1)
-    b.plot(w[10.0], yy + off, MARK[k], mfc="white", mec=CAT[k], mew=0.9, ms=4, zorder=2)
-    b.plot(w[20.0], yy + off, MARK[k], color=CAT[k], mec="white", mew=0.5, ms=4.6, zorder=3)
-b.set_yticks(yy)
-b.set_yticklabels(GORDER)
-b.set_xlabel("Relative abundance (%)")
-b.set_xlim(0, 46)
-b.xaxis.grid(True, color=GRID, lw=0.5)
-b.set_axisbelow(True)
-b.legend(handles=[Line2D([], [], ls="", marker="o", color=CAT[0], ms=4.5, label="FET-ProA-S1"),
-                  Line2D([], [], ls="", marker="s", color=CAT[1], ms=4.5, label="FET-ProA-S2"),
-                  Line2D([], [], ls="", marker="o", mfc="white", mec=INK2, ms=4, label="±10 ppm"),
-                  Line2D([], [], ls="", marker="o", color=INK2, ms=4.5, label="±20 ppm")],
-         frameon=False, loc="lower right", fontsize=6, handletextpad=0.2, ncol=2, columnspacing=0.6)
-tag(b, "B", x=-0.3)
+tag(a, "A", x=-0.12)
 
 for role, mk, col, lab in [("included", "o", CAT[0], "Included"), ("excluded", "s", CAT[1], "Excluded")]:
     q = qc[qc.role == role]
@@ -307,11 +291,39 @@ c.set_xscale("log")
 c.set_yscale("log")
 c.set_xlim(3e4, 1e10)
 c.set_ylim(0.02, 20)
-c.set_xlabel("Procainamide-labelled signal")
-c.set_ylabel("Acetonitrile-adduct / labelled signal")
+c.set_xlabel("Procainamide-labeled signal")
+c.set_ylabel("Acetonitrile-adduct ratio")
 c.legend(frameon=False, loc="upper right", fontsize=6, handletextpad=0.1, borderaxespad=0.1)
-tag(c, "C", x=-0.3)
-fig.tight_layout(w_pad=1.6)
+tag(c, "B", x=-0.28)
+
+panels = [("A2G2", "fet"), ("A3G3", "fet"), ("A3G3S1", "fet"), ("A3G3S2", "fet"), ("A2G2S1", "tfn")]
+for k, (g, kind) in enumerate(panels):
+    ax = fig.add_subplot(gs[1, k])
+    if kind == "fet":
+        for nm, col, mk, ls in [("FET-ProA-S1", CAT[0], "o", "-"), ("FET-ProA-S2", CAT[1], "s", "--")]:
+            w = fc.pivot(index="glycan", columns="ppm", values=nm).loc[g]
+            ax.plot(WIN, w[WIN].values, ls=ls, marker=mk, color=col, ms=3.5, mec="white", mew=0.4, lw=1.1)
+        ax.set_title(f"Fetuin {g}", fontsize=7)
+    else:
+        ax.plot(WIN, t.loc["A2G2S1", WIN].values, "-^", color=CAT[2], ms=3.5, mec="white", mew=0.4, lw=1.1)
+        ax.set_title("Transferrin A2G2S1", fontsize=7)
+    ax.set_xticks(WIN)
+    ax.set_xticklabels([f"{p_:g}" for p_ in WIN], fontsize=6)
+    ax.tick_params(axis="y", labelsize=6)
+    lo, hi = ax.get_ylim()
+    ax.set_ylim(0, max(hi * 1.1, 5))
+    ax.yaxis.grid(True, color=GRID, lw=0.5)
+    ax.set_axisbelow(True)
+    if k == 0:
+        ax.set_ylabel("Relative abundance (%)")
+        tag(ax, "C", x=-0.6)
+    if k == 2:
+        ax.set_xlabel("Extraction window (± ppm)")
+fig.legend(handles=[Line2D([], [], ls="-", marker="o", color=CAT[0], ms=3.5, label="FET-ProA-S1"),
+                    Line2D([], [], ls="--", marker="s", color=CAT[1], ms=3.5, label="FET-ProA-S2"),
+                    Line2D([], [], ls="-", marker="^", color=CAT[2], ms=3.5, label="TFN-ProA")],
+           frameon=False, loc="lower center", ncol=3, fontsize=6.5, bbox_to_anchor=(0.5, -0.01))
+fig.subplots_adjust(left=0.08, right=0.98, top=0.95, bottom=0.14)
 save(fig, "Figure3_procainamide")
 
 # ------------------------------------------------------------------ Figure S1: synthetic window benchmark
