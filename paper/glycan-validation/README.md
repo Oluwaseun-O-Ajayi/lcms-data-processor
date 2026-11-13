@@ -1,9 +1,9 @@
-# Analysis package for the JASMS application note
+# Analysis package for the released N-glycan validation paper
 
 Every figure and every number in the manuscript is regenerated from the tables in `data/` by
 
 ```bash
-python paper/jasms/make_figures.py
+python paper/glycan-validation/make_figures.py
 ```
 
 which writes `figures/` (Figures 1–3 and S1, PNG and PDF), `numbers.txt` (all quoted values),

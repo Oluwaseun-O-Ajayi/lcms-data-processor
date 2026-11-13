@@ -1,12 +1,12 @@
 """
-Regenerate the figures and every number quoted in the JASMS application note.
+Regenerate the figures and every number quoted in the released N-glycan validation paper.
 
 Usage (from the repository root):
-    python paper/jasms/make_figures.py
+    python paper/glycan-validation/make_figures.py
 
-Inputs are the result tables in paper/jasms/data/, written by cluster/sweep.slurm,
+Inputs are the result tables in paper/glycan-validation/data/, written by cluster/sweep.slurm,
 cluster/extras.slurm, the Skyline export, and cluster/procA_replicates.slurm.
-Outputs: paper/jasms/figures/Figure1-3 (PNG and PDF), FigureS1, and numbers.txt.
+Outputs: paper/glycan-validation/figures/Figure1-3 (PNG and PDF), FigureS1, and numbers.txt.
 """
 
 from pathlib import Path
