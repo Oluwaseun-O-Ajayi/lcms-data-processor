@@ -3,7 +3,7 @@ FET-ProA-S1,Bovine fetuin,procainamide,2024-05-21-15.22.10-Fet1_052124[result].d
 FET-ProA-S2,Bovine fetuin,procainamide,2024-05-21-23.22.19-Fet2_052124[result].d,included,Fetuin sample 2 (Fet2); separate sample from S1,250827107.0,2565285.0,11949987.0,0.0,0.048,pass
 TFN-ProA,Human transferrin,procainamide,2024-05-22-00.30.37-HTferin052124[result].d,included,"Second glycoprotein, same sequence",69281173.0,1186919.0,4260926.0,0.0,0.062,pass
 DEX-ProA,Dextran ladder,procainamide,2024-05-21-14.13.43-Dex5_052124[result].d,included,"Glucose unit calibrant, same sequence",,,,,,
-FET-ProA-ACN-I1,Bovine fetuin,procainamide,2024-05-17-19.32.29-Fetuin051724[result].d,excluded,"Reconstituted in 50:50 acetonitrile:water and frozen (Ajayi and Aduloju, 2026)",2169672.0,3712282.0,1070224.0,0.0,0.493,fail
+FET-ProA-ACN-I1,Bovine fetuin,procainamide,2024-05-17-19.32.29-Fetuin051724[result].d,excluded,"Stored in 50:50 acetonitrile:water and frozen",2169672.0,3712282.0,1070224.0,0.0,0.493,fail
 FET-ProA-ACN-I2,Bovine fetuin,procainamide,2024-05-30-22.49.43-Fet1_051724[result].d,excluded,"Same aliquot as FET-ProA-ACN-I1, re-injected",4033677.0,1600053.0,13990266.0,0.0,3.468,fail
 DEX-ProA-ACN,Dextran ladder,procainamide,2024-05-17-17.15.39-Dex5_051724[result].d,excluded,Only GU2-GU4 detected,,,,,,
 FET-ProA-X1,Bovine fetuin,procainamide,OA_12142023-02.10.24-Fetuin[result].d,excluded,Low labeled signal,275022.0,73432.0,327953.0,0.0,1.192,fail

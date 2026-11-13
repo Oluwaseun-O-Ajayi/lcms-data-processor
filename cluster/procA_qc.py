@@ -48,7 +48,7 @@ MANIFEST = [
     ('Dex5_052124', 'DEX-ProA', '2024-05-21-14.13.43-Dex5_052124[result].d', 'Dextran ladder', 'included',
      'Glucose unit calibrant, same sequence'),
     ('Fetuin051724', 'FET-ProA-ACN-I1', '2024-05-17-19.32.29-Fetuin051724[result].d', 'Bovine fetuin',
-     'excluded', 'Reconstituted in 50:50 acetonitrile:water and frozen (Ajayi and Aduloju, 2026)'),
+     'excluded', 'Stored in 50:50 acetonitrile:water and frozen'),
     ('Fet1_051724', 'FET-ProA-ACN-I2', '2024-05-30-22.49.43-Fet1_051724[result].d', 'Bovine fetuin',
      'excluded', 'Same aliquot as FET-ProA-ACN-I1, re-injected'),
     ('Dex5_051724', 'DEX-ProA-ACN', '2024-05-17-17.15.39-Dex5_051724[result].d', 'Dextran ladder', 'excluded',
