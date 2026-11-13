@@ -28,7 +28,8 @@ echo "Found ${#files[@]} mzML files"
 
 for f in "${files[@]}"; do
   base=$(basename "$f" .mzML)
-  short=$(echo "$base" | sed -E 's/^[0-9.-]+-//; s/\[result\]//')
+  short=$(echo "$base" | sed -E 's/\[result\]//; s/^OA_([0-9_]+)[-_][0-9]+\.[0-9]+\.[0-9]+-(.*)$/\2_\1/; s/^[0-9.-]+-//')
+  if [ -f "$OUT/${short}_tic.csv" ]; then echo "== $short (done before, skipped)"; continue; fi
   echo "== $short"
   python - "$f" "$OUT/${short}_tic.csv" <<'PY'
 import sys
@@ -36,10 +37,10 @@ from lcms_data_processor import MzMLReader
 MzMLReader(sys.argv[1]).tic().to_csv(sys.argv[2], index=False)
 PY
   case "$short" in
-    Dex*)
+    *Dex*)
       python examples/mass_errors.py --mzml "$f" --targets cluster/procA_dextran_targets.csv \
         --out "$OUT/${short}_dextran_ladder.csv" ;;
-    Fet*)
+    *Fet*)
       lcms-glycan-search --mzml "$f" --survey --label procainamide --charges 2 3 4 --ppm 20 \
         --out "$OUT/${short}_survey.csv" > /dev/null ;;
   esac
