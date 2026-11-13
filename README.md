@@ -3,7 +3,7 @@
 **Transparent processing of LC-MS chromatograms, from exported CSV traces or mzML files: baseline, peak detection and integration, signal-to-noise, peak shape, resolution and linear calibration.**
 
 [![tests](https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor/actions/workflows/tests.yml/badge.svg)](https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor/actions/workflows/tests.yml)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21652569.svg)](https://doi.org/10.5281/zenodo.21652569)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21652568.svg)](https://doi.org/10.5281/zenodo.21652568)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 LC-MS Data Processor reads a chromatogram saved as a CSV file with `time` and `intensity` columns (for example, an extracted-ion or total-ion chromatogram exported from vendor software) and runs a short, readable pipeline: baseline estimation, peak detection, integration, signal-to-noise, asymmetry and resolution checks, and linear calibration for quantification. Every step is a few lines of documented Python, so the processing can be inspected, taught and changed.
@@ -111,7 +111,7 @@ Bug reports, questions and pull requests are welcome; see [CONTRIBUTING.md](CONT
 
 ## Citation
 
-Ajayi, O. O. (2026). *LC-MS Data Processor*. Zenodo. https://doi.org/10.5281/zenodo.21652569 (see `CITATION.cff`).
+Ajayi, O. O. (2026). *LC-MS Data Processor*. Zenodo. https://doi.org/10.5281/zenodo.21652568 (see `CITATION.cff`).
 
 ## License
 
