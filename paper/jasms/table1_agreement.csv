@@ -1,0 +1,4 @@
+comparison,n,mean_abs_diff,max_abs_diff,loa,r
+LC-MS Data Processor vs Skyline,8,0.547,1.196,1.468,0.998
+LC-MS Data Processor vs fluorescence,8,2.715,5.808,6.485,0.955
+Skyline vs fluorescence,8,2.429,4.612,5.68,0.965

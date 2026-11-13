@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-NAMES = {'Fet1_052124': 'FET-ProA-S1', 'Fet2_052124': 'FET-ProA-S2', 'HTferin052124': 'TFN-ProA-P1'}
+NAMES = {'Fet1_052124': 'FET-ProA-S1', 'Fet2_052124': 'FET-ProA-S2', 'HTferin052124': 'TFN-ProA'}
 
 
 def sample_name(file):
@@ -37,14 +37,12 @@ def main(argv=None):
     fet = g[g['sample'].str.startswith('FET')]
     wide = fet.pivot_table(index=['ppm', 'glycan'], columns='sample', values='relative_abundance_pct').reset_index()
     i1, i2 = 'FET-ProA-S1', 'FET-ProA-S2'
-    wide['mean_pct'] = wide[[i1, i2]].mean(axis=1)
-    wide['abs_diff_pct_points'] = (wide[i1] - wide[i2]).abs()
-    wide['cv_pct'] = 100 * wide[[i1, i2]].std(axis=1, ddof=1) / wide['mean_pct']
+    wide['difference_pct_points'] = wide[i2] - wide[i1]
     wide.round(3).to_csv(f"{a.out}_fetuin_comparison.csv", index=False)
     print('Fetuin, sample-to-sample comparison (relative abundance, %):')
     print(wide.round(2).to_string(index=False))
 
-    tfn = g[g['sample'] == 'TFN-ProA-P1'][['ppm', 'glycan', 'peak_area', 'relative_abundance_pct']]
+    tfn = g[g['sample'] == 'TFN-ProA'][['ppm', 'glycan', 'peak_area', 'relative_abundance_pct']]
     tfn.round(3).to_csv(f"{a.out}_transferrin_profile.csv", index=False)
     print('\nTransferrin profile (relative abundance, %):')
     print(tfn.round(2).to_string(index=False))
@@ -53,7 +51,7 @@ def main(argv=None):
     t = pd.concat([pd.read_csv(f) for f in glob.glob(f"{r}/*_targets.csv")
                    if not f.endswith('_target_list.csv')], ignore_index=True)
     t['sample'] = t['file'].map(sample_name)
-    t = t[t['ppm'] == t['ppm'].min()]
+    t = t[t['ppm'] == t['ppm'].max()]  # widest window: least affected by mass-calibration offset
     cs = t.pivot_table(index=['sample', 'glycan'], columns='charge', values='peak_area', aggfunc='sum').fillna(0)
     cs = cs.div(cs.sum(axis=1).replace(0, np.nan), axis=0).mul(100).round(1)
     cs.columns = [f'pct_{int(c)}+' for c in cs.columns]

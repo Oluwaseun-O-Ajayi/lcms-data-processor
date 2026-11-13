@@ -1,8 +1,11 @@
 # Changelog
 
-## Unreleased
+## 1.4.0 (2026-11)
 
 ### Added
+- Procainamide workflow for released N-glycans (`cluster/make_procA_targets.py`, `cluster/procA_replicates.slurm`, `cluster/procA_summary.py`): fetuin and transferrin target lists with retention windows, quantitation at several extraction windows, mass errors and charge-state distribution.
+- `cluster/procA_qc.py`: run manifest and label-chemistry check (procainamide-labeled signal and acetonitrile-adduct series) for every surveyed run.
+- `paper/jasms/`: result tables, figure script and the numbers quoted in the JASMS application note.
 - `lcms-batch --peak-mode sum`: integrate every peak inside a target's retention window (for partly resolved isomers).
 - `PeakDetector.detect_peaks(threshold_range=...)`: relative detection thresholds scaled to the target's retention window; `lcms-batch` uses it whenever a window is given, so a small peak next to a much larger peak at the same m/z is still detected (found by cross-checking against Skyline).
 - `glycan_targets.parse_adducts` and `glycan_mz_adducts`: mixed adduct sets such as `H+Na` and `2H+Na`.

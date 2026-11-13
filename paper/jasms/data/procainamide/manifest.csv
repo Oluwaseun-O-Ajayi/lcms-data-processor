@@ -1,0 +1,16 @@
+sample,analyte,label,raw_file,role,note
+FET-ProA-S1,Bovine fetuin,procainamide,2024-05-21-15.22.10-Fet1_052124[result].d,included,"Fetuin sample 1 (Fet1); same sequence as S2, injected 8 h earlier"
+FET-ProA-S2,Bovine fetuin,procainamide,2024-05-21-23.22.19-Fet2_052124[result].d,included,Fetuin sample 2 (Fet2); separate sample from S1
+TFN-ProA,Human transferrin,procainamide,2024-05-22-00.30.37-HTferin052124[result].d,included,"Second glycoprotein, same sequence"
+DEX-ProA,Dextran ladder,procainamide,2024-05-21-14.13.43-Dex5_052124[result].d,included,"Glucose unit calibrant, same sequence"
+FET-ProA-ACN-I1,Bovine fetuin,procainamide,2024-05-17-19.32.29-Fetuin051724[result].d,excluded,"Reconstituted in 50:50 acetonitrile:water and frozen (Ajayi and Aduloju, 2026)"
+FET-ProA-ACN-I2,Bovine fetuin,procainamide,2024-05-30-22.49.43-Fet1_051724[result].d,excluded,"Same aliquot as FET-ProA-ACN-I1, re-injected"
+DEX-ProA-ACN,Dextran ladder,procainamide,2024-05-17-17.15.39-Dex5_051724[result].d,excluded,Only GU2-GU4 detected
+FET-ProA-X1,Bovine fetuin,procainamide,OA_12142023-02.10.24-Fetuin[result].d,excluded,Low labeled signal
+FET-ProA-X2,Bovine fetuin,procainamide,OA_2024_01_24_15.49.40-Fet[result].d,excluded,Low labeled signal; elution order inconsistent with the method
+FET-ProA-X3,Bovine fetuin,procainamide,2024-06-11-21.26.01-BFet052824[result].d,excluded,Low labeled signal
+FET-ProA-X4,Bovine fetuin,procainamide,2024-04-11-20.22.16-Fet-ca[result].d,excluded,Low labeled signal; acetonitrile series dominant
+FET-ProA-X5,Bovine fetuin,procainamide,2024-04-11-23.46.26-Fet-cb[result].d,excluded,Low labeled signal; acetonitrile series dominant
+FET-ProA-X6,Bovine fetuin,procainamide,2024-04-12-03.10.33-Fet-cc[result].d,excluded,Low labeled signal
+TFN-ProA-X1,Transferrin (BTferin),procainamide,2024-05-22-01.39.06-BTferin052124[result].d,excluded,Low labeled signal
+FET-2AB-CRL,Bovine fetuin,2-AB,MASOP00220_AB_CRL_07JAN2021_Fetuin_001 (public),included,Public 2-AB data with fluorescence trace

@@ -10,7 +10,7 @@ chemistry that produced the ion:
     procainamide + C2H3N   +260.200 Da    (acetonitrile adduct series)
     2-AB                   +120.0687 Da   (control for carry-over of the other label)
 
-A run passes when its procainamide-labelled signal is at least MIN_SIGNAL and the acetonitrile
+A run passes when its procainamide-labeled signal is at least MIN_SIGNAL and the acetonitrile
 series is less than MAX_ACN_SHARE of the labelled signal. Both thresholds were set from the
 runs in this manifest and are reported as such; they are not general acceptance limits.
 
@@ -43,9 +43,9 @@ MANIFEST = [
      'Fetuin sample 1 (Fet1); same sequence as S2, injected 8 h earlier'),
     ('Fet2_052124', 'FET-ProA-S2', '2024-05-21-23.22.19-Fet2_052124[result].d', 'Bovine fetuin', 'included',
      'Fetuin sample 2 (Fet2); separate sample from S1'),
-    ('HTferin052124', 'TFN-ProA-P1', '2024-05-22-00.30.37-HTferin052124[result].d', 'Human transferrin',
+    ('HTferin052124', 'TFN-ProA', '2024-05-22-00.30.37-HTferin052124[result].d', 'Human transferrin',
      'included', 'Second glycoprotein, same sequence'),
-    ('Dex5_052124', 'DEX-ProA-P1', '2024-05-21-14.13.43-Dex5_052124[result].d', 'Dextran ladder', 'included',
+    ('Dex5_052124', 'DEX-ProA', '2024-05-21-14.13.43-Dex5_052124[result].d', 'Dextran ladder', 'included',
      'Glucose unit calibrant, same sequence'),
     ('Fetuin051724', 'FET-ProA-ACN-I1', '2024-05-17-19.32.29-Fetuin051724[result].d', 'Bovine fetuin',
      'excluded', 'Reconstituted in 50:50 acetonitrile:water and frozen (Ajayi and Aduloju, 2026)'),
@@ -54,19 +54,19 @@ MANIFEST = [
     ('Dex5_051724', 'DEX-ProA-ACN', '2024-05-17-17.15.39-Dex5_051724[result].d', 'Dextran ladder', 'excluded',
      'Only GU2-GU4 detected'),
     ('Fetuin_12142023', 'FET-ProA-X1', 'OA_12142023-02.10.24-Fetuin[result].d', 'Bovine fetuin', 'excluded',
-     'Low labelled signal'),
+     'Low labeled signal'),
     ('Fet_2024_01_24', 'FET-ProA-X2', 'OA_2024_01_24_15.49.40-Fet[result].d', 'Bovine fetuin', 'excluded',
-     'Low labelled signal; elution order inconsistent with the method'),
+     'Low labeled signal; elution order inconsistent with the method'),
     ('BFet052824', 'FET-ProA-X3', '2024-06-11-21.26.01-BFet052824[result].d', 'Bovine fetuin', 'excluded',
-     'Low labelled signal'),
+     'Low labeled signal'),
     ('Fet-ca', 'FET-ProA-X4', '2024-04-11-20.22.16-Fet-ca[result].d', 'Bovine fetuin', 'excluded',
-     'Low labelled signal; acetonitrile series dominant'),
+     'Low labeled signal; acetonitrile series dominant'),
     ('Fet-cb', 'FET-ProA-X5', '2024-04-11-23.46.26-Fet-cb[result].d', 'Bovine fetuin', 'excluded',
-     'Low labelled signal; acetonitrile series dominant'),
+     'Low labeled signal; acetonitrile series dominant'),
     ('Fet-cc', 'FET-ProA-X6', '2024-04-12-03.10.33-Fet-cc[result].d', 'Bovine fetuin', 'excluded',
-     'Low labelled signal'),
+     'Low labeled signal'),
     ('BTferin052124', 'TFN-ProA-X1', '2024-05-22-01.39.06-BTferin052124[result].d', 'Transferrin (BTferin)',
-     'excluded', 'Low labelled signal'),
+     'excluded', 'Low labeled signal'),
 ]
 
 
