@@ -39,10 +39,10 @@ MAX_ACN_SHARE = 0.25
 
 # survey file stem, sample name, raw file, analyte, role, note
 MANIFEST = [
-    ('Fet1_052124', 'FET-ProA-P1-I1', '2024-05-21-15.22.10-Fet1_052124[result].d', 'Bovine fetuin', 'included',
-     'Preparation 1, injection 1'),
-    ('Fet2_052124', 'FET-ProA-P1-I2', '2024-05-21-23.22.19-Fet2_052124[result].d', 'Bovine fetuin', 'included',
-     'Preparation 1, injection 2'),
+    ('Fet1_052124', 'FET-ProA-S1', '2024-05-21-15.22.10-Fet1_052124[result].d', 'Bovine fetuin', 'included',
+     'Fetuin sample 1 (Fet1); same sequence as S2, injected 8 h earlier'),
+    ('Fet2_052124', 'FET-ProA-S2', '2024-05-21-23.22.19-Fet2_052124[result].d', 'Bovine fetuin', 'included',
+     'Fetuin sample 2 (Fet2); separate sample from S1'),
     ('HTferin052124', 'TFN-ProA-P1', '2024-05-22-00.30.37-HTferin052124[result].d', 'Human transferrin',
      'included', 'Second glycoprotein, same sequence'),
     ('Dex5_052124', 'DEX-ProA-P1', '2024-05-21-14.13.43-Dex5_052124[result].d', 'Dextran ladder', 'included',
