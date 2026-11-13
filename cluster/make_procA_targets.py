@@ -1,7 +1,7 @@
 """
 Write the procainamide target lists for fetuin and human transferrin.
 
-Retention windows were read from the untargeted survey of the same runs (FET-ProA-S1/I2 and
+Retention windows were read from the untargeted survey of the same runs (FET-ProA-S1, FET-ProA-S2 and
 TFN-ProA-P1) and checked against the retention times recorded for this method
 (A3G3 26.8, A3G3S1 29.9, A3G3S2 32.2, A3G3S3 34.8 min). Each window covers the apex of the
 dominant charge state in every run plus the neighbouring isomer peaks, and stops short of the

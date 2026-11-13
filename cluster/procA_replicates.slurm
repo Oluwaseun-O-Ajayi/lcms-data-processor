@@ -8,7 +8,7 @@
 #SBATCH --output=logs/%x_%j.out
 #
 # Targeted quantitation of the procainamide runs that passed QC:
-#   FET-ProA-S1 / -I2 (two fetuin samples) and TFN-ProA-P1 (human transferrin).
+#   FET-ProA-S1 and FET-ProA-S2 (two fetuin samples) and TFN-ProA-P1 (human transferrin).
 # Also writes the run manifest and QC table for every procainamide run surveyed.
 # Submit from the repository folder:   mkdir -p logs && sbatch cluster/procA_replicates.slurm
 set -euo pipefail
