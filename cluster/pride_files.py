@@ -1,7 +1,9 @@
 """List and download files from a PRIDE Archive project, with size and checksum checks.
 
 Run on the GACRC transfer node (xfer.gacrc.uga.edu). Works with Python 3.6 or later (the
-transfer node has 3.6.8). The workspace that wrote this script
+transfer node has 3.6.8). Downloads use curl, which resumes a partial file after a dropped
+connection. For long runs, start it in the background so it survives logging out:
+    nohup python3 -u cluster/pride_files.py ... > download.log 2>&1 & The workspace that wrote this script
 cannot reach EBI, so the API response is checked at run time: the raw JSON is always saved,
 and missing fields are reported instead of guessed.
 
@@ -20,6 +22,7 @@ import csv
 import hashlib
 import json
 import re
+import subprocess
 import sys
 import time
 import urllib.request
@@ -98,7 +101,7 @@ def list_files(acc: str, dest: Path) -> List[Dict]:
 
     out = dest / f"{acc}_files.csv"
     with out.open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=list(rows[0]) if rows else ["file_name"])
+        w = csv.DictWriter(fh, fieldnames=list(rows[0]) if rows else ["file_name"], lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     print(f"{acc}: {len(rows)} files -> {out}")
@@ -144,9 +147,19 @@ def download(rows: List[Dict], dest: Path) -> int:
         if target.exists() and verify(target, row):
             print(f"OK (already present): {name}")
             continue
-        print(f"Downloading {name} ({int(row['size_bytes'] or 0) / 1e6:.1f} MB)")
+        print(f"Downloading {name} ({int(row['size_bytes'] or 0) / 1e6:.1f} MB)", flush=True)
         tmp = target.with_suffix(target.suffix + ".part")
-        urllib.request.urlretrieve(url, tmp)
+        # curl resumes a partial file (-C -); retry up to 20 times after a dropped connection
+        for attempt in range(1, 21):
+            rc = subprocess.call(["curl", "-L", "--fail", "-sS", "-C", "-", "-o", str(tmp), url])
+            if rc == 0:
+                break
+            print(f"  curl exit {rc}; retry {attempt}/20 in 30 s", flush=True)
+            time.sleep(30)
+        else:
+            print(f"  FAILED after 20 attempts: {name} (partial file kept: {tmp.name})", flush=True)
+            failures += 1
+            continue
         tmp.rename(target)
         if not verify(target, row):
             failures += 1
