@@ -10,6 +10,7 @@ Label shifts assume reductive amination (label + glycan - H2O + 2H):
     2-AB (2-aminobenzamide, C7H8N2O)        +120.068748
     2-AA (2-aminobenzoic acid, C7H7NO2)     +121.052764
     procainamide (C13H21N3O)                +219.173547
+    RapiFluor-MS (urea link, not reductive amination; adds C17H21N5O)  +311.174610
     reduced (alditol, +2H)                  +2.015650
     none (free reducing end)                 0
 
@@ -39,6 +40,13 @@ LABEL_FORMULA = {
     '2-AA': {'C': 7, 'H': 7, 'N': 1, 'O': 2},
     'procainamide': {'C': 13, 'H': 21, 'N': 3, 'O': 1},
 }
+# Labels attached by a reaction other than reductive amination: element counts added to the free glycan.
+# RapiFluor-MS: glycosylamine (+NH3 -H2O) joined through a urea (+CO -2H) to
+# 6-amino-N-(2-(diethylamino)ethyl)quinoline-4-carboxamide (C16H22N4O); net +C17H21N5O.
+LABEL_ADDED_FORMULA = {
+    'RapiFluor-MS': {'C': 17, 'H': 21, 'N': 5, 'O': 1},
+}
+LABEL_ALIASES = {'RFMS': 'RapiFluor-MS', 'rapifluor-ms': 'RapiFluor-MS', 'ProA': 'procainamide'}
 ADDUCT = {'H': PROTON, 'Na': 22.98922070, 'NH4': 18.03382555}
 
 
@@ -58,8 +66,12 @@ def label_shift(label):
         return 0.0
     if label == 'reduced':
         return H2
+    label = LABEL_ALIASES.get(label, label)
+    if label in LABEL_ADDED_FORMULA:
+        return formula_mass(LABEL_ADDED_FORMULA[label])
     if label not in LABEL_FORMULA:
-        raise ValueError(f"Unknown label '{label}'. Options: none, reduced, {', '.join(LABEL_FORMULA)}")
+        options = ', '.join(['none', 'reduced', *LABEL_FORMULA, *LABEL_ADDED_FORMULA, *LABEL_ALIASES])
+        raise ValueError(f"Unknown label '{label}'. Options: {options}")
     return formula_mass(LABEL_FORMULA[label]) - WATER + H2
 
 
