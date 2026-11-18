@@ -328,3 +328,12 @@ def test_small_target_peak_next_to_large_isobaric_peak_is_detected():
     late, _ = lcms_batch.best_peak(t, y, 31.1, 32.3, 5, 0.1, 0.1, "sum")
     assert early is not None and early["peak_area"] == pytest.approx(300, rel=0.05)
     assert late["peak_area"] == pytest.approx(10000, rel=0.03)
+
+
+def test_rapifluor_ms_matches_observed_igg_glycans():
+    """RFMS FA2, FA2G1 and FA2G2 [M+2H]2+ within 2 ppm of values observed in PXD078897 (MS154 run)."""
+    observed = {"N4H3F1": 887.8661, "N4H4F1": 968.8918, "N4H5F1": 1049.9183}
+    for comp, mz in observed.items():
+        calc = gt.glycan_mz(comp, charge=2, label="RFMS")
+        assert abs(mz - calc) / calc * 1e6 < 2.0
+    assert abs(gt.label_shift("RapiFluor-MS") - 311.17461) < 1e-4
