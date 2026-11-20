@@ -11,6 +11,7 @@ Writes to --out:
     agreement_per_glycan.csv    mean MS %, mean FLD %, bias and 95% limits per glycan (all runs)
     repeatability.csv           within-day and between-day CV per glycan, MS and FLD separately
     settings_sensitivity.csv    MAD vs FLD for every processing setting, per run
+    calibration_cross_day.csv   response factors fitted on one day, tested on the other days
     Figure_replicates.png/.pdf  (a) MS % vs FLD % per glycan, mean +/- SD; (b) Bland-Altman, all runs
 
 Percentages are recomputed over the glycans matched to a fluorescence peak in every run, so
@@ -140,6 +141,31 @@ def main():
     print("\nPer glycan:\n" + per_gly.to_string(index=False, float_format=lambda v: f"{v:.2f}"))
     print("\nRepeatability (CV %, of the mean relative abundance):\n" +
           rep.to_string(index=False, float_format=lambda v: f"{v:.2f}"))
+
+    # cross-day calibration: per-glycan response factor RF = mean(MS % / FLD %) on the training day;
+    # on every other day the MS areas are divided by RF, renormalised, and compared with FLD again.
+    cal_rows = []
+    for train_day in sorted(c["day"].unique()):
+        tr = c[c["day"] == train_day]
+        rf = (tr["ms_pct"] / tr["fld_pct"]).groupby(tr["glycan"]).mean()
+        te = c[c["day"] != train_day].copy()
+        te["ms_area_cal"] = te["ms_area"] / te["glycan"].map(rf)
+        te["ms_pct_cal"] = 100 * te["ms_area_cal"] / te.groupby("run")["ms_area_cal"].transform("sum")
+        for run, d in te.groupby("run"):
+            before = stats(d["ms_pct"], d["fld_pct"])
+            after = stats(d["ms_pct_cal"], d["fld_pct"])
+            cal_rows.append({"train_day": train_day, "test_run": run, "test_day": d["day"].iat[0],
+                             "mad_before": before["mean_abs_diff"], "mad_after": after["mean_abs_diff"],
+                             "loa_halfwidth_before": before["loa_high"] - before["bias"],
+                             "loa_halfwidth_after": after["loa_high"] - after["bias"]})
+        print(f"\nResponse factors fitted on day {train_day} (MS % / FLD %): " +
+              ", ".join(f"{g} {v:.3f}" for g, v in rf.items()))
+    cal = pd.DataFrame(cal_rows)
+    cal.to_csv(a.out / "calibration_cross_day.csv", index=False)
+    print("\nCross-day calibration, test runs only (points):\n" +
+          cal.groupby("train_day")[["mad_before", "mad_after", "loa_halfwidth_before", "loa_halfwidth_after"]]
+          .mean().to_string(float_format=lambda v: f"{v:.3f}"))
+    print(f"All train/test pairs: MAD {cal['mad_before'].mean():.3f} -> {cal['mad_after'].mean():.3f} points")
 
     # settings sensitivity: MS % per setting (lcms-batch) vs the run's FLD % (setting-independent)
     sens = []
