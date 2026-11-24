@@ -76,7 +76,10 @@ def main():
     # 1. full profile
     full = []
     for run, d in ok.groupby("run"):
-        full.append({"run": run, "protein": d["protein"].iat[0], **stats(pct(d["ms_area"]), pct(d["fld_area"]))})
+        pk = a.results / f"{run}_fld_fld_peaks.csv"
+        total = pd.read_csv(pk)["peak_area"].sum() if pk.exists() else np.nan
+        full.append({"run": run, "protein": d["protein"].iat[0], **stats(pct(d["ms_area"]), pct(d["fld_area"])),
+                     "fld_coverage_pct": 100 * d["fld_area"].sum() / total if total else np.nan})
     full = pd.DataFrame(full)
     full.to_csv(a.out / "full_profile.csv", index=False)
 
@@ -122,7 +125,7 @@ def main():
 
     fmt = lambda v: f"{v:.3f}"
     print("\n1. Full profile, no correction (points):\n" +
-          full.groupby("protein")[["n", "mean_abs_diff", "loa_halfwidth", "pearson_r"]].mean().to_string(float_format=fmt))
+          full.groupby("protein")[["n", "mean_abs_diff", "loa_halfwidth", "pearson_r", "fld_coverage_pct"]].mean().to_string(float_format=fmt))
     if len(tr):
         print("\n2. Reference RFs applied to shared glycans (points):\n" +
               tr.groupby("protein")[["n", "mad_before", "mad_after", "loa_halfwidth_before", "loa_halfwidth_after"]]

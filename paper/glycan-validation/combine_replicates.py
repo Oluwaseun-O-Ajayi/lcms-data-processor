@@ -28,6 +28,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy import stats as sst
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -109,17 +110,29 @@ def main():
     c[["run", "day", "rep", "glycan", "ms_rt", "fld_rts", "ms_area", "fld_area", "ms_pct", "fld_pct", "diff"]] \
         .sort_values(["day", "rep", "glycan"]).to_csv(a.out / "per_run_per_glycan.csv", index=False)
 
+    def coverage(run, glycans):
+        """Share of all fluorescence peak area in the glycan region taken by the given glycans."""
+        f = a.results / f"{run}_fld_fld_peaks.csv"
+        if not f.exists():
+            return np.nan
+        total = pd.read_csv(f)["peak_area"].sum()
+        sel = allg[(allg["run"] == run) & (allg["glycan"].isin(glycans))]["fld_area"].sum()
+        return 100 * sel / total if total else np.nan
+
     per_run = pd.DataFrame([{"run": r, "day": g["day"].iat[0], "rep": g["rep"].iat[0],
-                             **stats(g["ms_pct"], g["fld_pct"])} for r, g in c.groupby("run")])
+                             **stats(g["ms_pct"], g["fld_pct"]),
+                             "fld_coverage_pct": coverage(r, common)} for r, g in c.groupby("run")])
     per_run = per_run.sort_values(["day", "rep"])
     per_run.to_csv(a.out / "agreement_per_run.csv", index=False)
 
     per_gly = []
     for g, d in c.groupby("glycan"):
         s = stats(d["ms_pct"], d["fld_pct"])
+        half = sst.t.ppf(0.975, len(d) - 1) * d["diff"].std(ddof=1) / np.sqrt(len(d))
         per_gly.append({"glycan": g, "n_runs": len(d), "ms_pct_mean": d["ms_pct"].mean(), "ms_pct_sd": d["ms_pct"].std(ddof=1),
                         "fld_pct_mean": d["fld_pct"].mean(), "fld_pct_sd": d["fld_pct"].std(ddof=1),
-                        "bias": s["bias"], "loa_low": s["loa_low"], "loa_high": s["loa_high"]})
+                        "bias": s["bias"], "bias_ci95_low": s["bias"] - half, "bias_ci95_high": s["bias"] + half,
+                        "loa_low": s["loa_low"], "loa_high": s["loa_high"]})
     per_gly = pd.DataFrame(per_gly).sort_values("fld_pct_mean", ascending=False)
     per_gly.to_csv(a.out / "agreement_per_glycan.csv", index=False)
 
@@ -135,6 +148,9 @@ def main():
     rep.to_csv(a.out / "repeatability.csv", index=False)
 
     pooled = stats(c["ms_pct"], c["fld_pct"])
+    cov = per_run["fld_coverage_pct"]
+    print(f"\nFluorescence coverage of the common glycan set (share of all FLD peak area in the glycan region): "
+          f"mean {cov.mean():.1f}%, range {cov.min():.1f} to {cov.max():.1f}%")
     print("\nPooled over all runs (default setting): " +
           ", ".join(f"{k}={v:.4g}" for k, v in pooled.items()))
     print("\nPer run:\n" + per_run.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
