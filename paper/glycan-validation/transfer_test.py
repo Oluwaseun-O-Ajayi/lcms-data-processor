@@ -76,8 +76,9 @@ def main():
     # 1. full profile
     full = []
     for run, d in ok.groupby("run"):
-        pk = a.results / f"{run}_fld_fld_peaks.csv"
-        total = pd.read_csv(pk)["peak_area"].sum() if pk.exists() else np.nan
+        sf = a.results / f"{run}_fld_summary.csv"
+        sm = pd.read_csv(sf) if sf.exists() else pd.DataFrame()
+        total = float(sm["fld_region_area"].iat[0]) if "fld_region_area" in sm else np.nan
         full.append({"run": run, "protein": d["protein"].iat[0], **stats(pct(d["ms_area"]), pct(d["fld_area"])),
                      "fld_coverage_pct": 100 * d["fld_area"].sum() / total if total else np.nan})
     full = pd.DataFrame(full)

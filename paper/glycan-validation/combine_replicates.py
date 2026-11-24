@@ -111,11 +111,15 @@ def main():
         .sort_values(["day", "rep", "glycan"]).to_csv(a.out / "per_run_per_glycan.csv", index=False)
 
     def coverage(run, glycans):
-        """Share of all fluorescence peak area in the glycan region taken by the given glycans."""
-        f = a.results / f"{run}_fld_fld_peaks.csv"
+        """Share of the whole baseline-corrected fluorescence area of the glycan region (detected or not)
+        taken by the given glycans; read from lcms-compare's summary (fld_region_area)."""
+        f = a.results / f"{run}_fld_summary.csv"
         if not f.exists():
             return np.nan
-        total = pd.read_csv(f)["peak_area"].sum()
+        sm = pd.read_csv(f)
+        if "fld_region_area" not in sm:
+            return np.nan
+        total = float(sm["fld_region_area"].iat[0])
         sel = allg[(allg["run"] == run) & (allg["glycan"].isin(glycans))]["fld_area"].sum()
         return 100 * sel / total if total else np.nan
 
@@ -149,7 +153,7 @@ def main():
 
     pooled = stats(c["ms_pct"], c["fld_pct"])
     cov = per_run["fld_coverage_pct"]
-    print(f"\nFluorescence coverage of the common glycan set (share of all FLD peak area in the glycan region): "
+    print(f"\nFluorescence coverage of the common glycan set (share of the whole baseline-corrected FLD area of the glycan region): "
           f"mean {cov.mean():.1f}%, range {cov.min():.1f} to {cov.max():.1f}%")
     print("\nPooled over all runs (default setting): " +
           ", ".join(f"{k}={v:.4g}" for k, v in pooled.items()))
