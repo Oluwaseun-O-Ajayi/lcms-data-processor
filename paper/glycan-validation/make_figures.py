@@ -6,9 +6,9 @@ Usage (from the repository root):
 
 Inputs are the result tables in paper/glycan-validation/data/, written by cluster/sweep.slurm,
 cluster/extras.slurm, the Skyline export, cluster/procA_replicates.slurm (fetuin, procainamide),
-combine_replicates.py and transfer_test.py (RapiFluor-MS data set PXD078897).
-Outputs: paper/glycan-validation/figures/Figure1-3 and FigureS2-S4 (PNG and PDF), TOC_graphic, and numbers.txt.
-Figure S1 (isomer pairs) is written by xic_pair.py (cluster/xic_pairs.slurm).
+combine_replicates.py, transfer_test.py and lcms-compare fld (RapiFluor-MS data set PXD078897).
+Outputs: paper/glycan-validation/figures/Figure1-3 and FigureS1-S4 (PNG and PDF), TOC_graphic, and numbers.txt.
+Figure S1 (isomer pairs) needs the traces written by xic_pair.py (cluster/xic_pairs.slurm).
 """
 
 from pathlib import Path
@@ -393,6 +393,21 @@ for nm, tb in (("within protein", wps), ("transfer from MS154", trs)):
     for p_, r in tb.iterrows():
         say(f"{nm}, {p_}: MAD {r.mad_before:.3f} -> {r.mad_after:.3f}, LoA {r.loa_halfwidth_before:.2f} -> {r.loa_halfwidth_after:.2f}")
 
+
+# MS119 signal and replicate precision per protein (per-glycan files from lcms-compare fld)
+import glob as _glob
+for p_ in ("Trast", "Afli", "Cetux"):
+    fs = sorted(_glob.glob(str(HERE / "data" / "ms119_per_glycan" / f"*{p_}*_fld_per_glycan.csv")))
+    g = pd.concat([pd.read_csv(f).assign(run=Path(f).name) for f in fs])
+    g = g[g.status == "matched"]
+    tot = g.groupby("run")[["ms_area", "fld_area"]].sum()
+    g["ms_p"] = 100 * g.ms_area / g.groupby("run").ms_area.transform("sum")
+    g["fl_p"] = 100 * g.fld_area / g.groupby("run").fld_area.transform("sum")
+    cv = g.groupby("glycan").agg(ms=("ms_p", lambda x: 100 * x.std(ddof=1) / x.mean()),
+                                 fl=("fl_p", lambda x: 100 * x.std(ddof=1) / x.mean()))
+    say(f"MS119 {p_}: {len(fs)} runs, MS/FLD summed area {(tot.ms_area / tot.fld_area).mean():.2f}, "
+        f"replicate CV of relative abundance MS max {cv.ms.max():.1f}%, FLD max {cv.fl.max():.1f}%")
+
 # Figure 1C: MS154 settings
 for k, w in enumerate(sorted(sens.width.unique())):
     st = sens[sens.width == w].groupby("ppm").mean_abs_diff
@@ -504,6 +519,37 @@ ax.legend(handles=[Line2D([], [], ls="", marker="o", mfc="white", mec=INK2, ms=5
           handletextpad=0.3)
 fig.tight_layout()
 save(fig, "Figure3_calibration")
+
+
+# Figure S1: G1F isomer pairs (traces written by xic_pair.py)
+PAIRS = [("pair_trast154_01.csv", "MS154 trastuzumab"), ("pair_trast119_01.csv", "MS119 trastuzumab"),
+         ("pair_afli01.csv", "MS119 aflibercept")]
+if all((HERE / "data" / "diag" / f).exists() for f, _ in PAIRS):
+    fig, axs = plt.subplots(1, 3, figsize=(7.0, 2.4), sharey=True)
+    for k, (ax, (f, lab)) in enumerate(zip(axs, PAIRS)):
+        tr = pd.read_csv(HERE / "data" / "diag" / f)
+        sp = tr.split_min.iloc[0]
+        txt = []
+        for name, col, lw in (("FLD", INK2, 1.0), ("MS", CAT[0], 1.2)):
+            q = tr[tr.trace == name]
+            y = q.intensity.to_numpy()
+            ax.plot(q.time_min, y / y.max(), color=col, lw=lw, label="Fluorescence" if name == "FLD" else "MS (G1F ions)")
+            tq = q.time_min.to_numpy()
+            l_ = __import__("scipy.integrate", fromlist=["trapezoid"]).trapezoid(y[tq <= sp], tq[tq <= sp])
+            r_ = __import__("scipy.integrate", fromlist=["trapezoid"]).trapezoid(y[tq > sp], tq[tq > sp])
+            txt.append(f"{name} {r_ / l_:.2f}")
+            say(f"isomer pair {lab}: {name} late/early {r_ / l_:.3f}")
+        ax.axvline(sp, color=INK2, lw=0.7, ls="--")
+        ax.text(0.97, 0.95, "late/early\n" + "\n".join(txt), transform=ax.transAxes, ha="right", va="top", fontsize=6.3, color=INK)
+        ax.set_title(lab, fontsize=7, color=INK2)
+        ax.set_xlabel("Retention time (min)")
+        ax.set_ylim(-0.02, 1.08)
+        tag(ax, "ABC"[k], x=-0.12 if k else -0.3)
+    axs[0].set_ylabel("Normalized intensity")
+    h_, l_ = axs[0].get_legend_handles_labels()
+    fig.legend(h_, l_, frameon=False, fontsize=7, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.0))
+    fig.tight_layout(w_pad=1.0, rect=(0, 0, 1, 0.9))
+    save(fig, "FigureS1_isomer_pairs")
 
 # TOC graphic (3.25 x 1.75 in)
 fig = plt.figure(figsize=(3.25, 1.75))

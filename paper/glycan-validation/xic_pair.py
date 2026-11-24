@@ -1,8 +1,9 @@
 """MS extracted-ion chromatogram and fluorescence trace of an isomer pair, with the retention window
 boundary marked, to see whether the larger isomer's tail falls inside the smaller isomer's window.
 
-Prints, for the MS XIC and for the fluorescence trace, the area on each side of --split (min) and the
-ratio second/first, then saves an overlay figure.
+Prints, for the MS XIC and for the fluorescence trace, the area on each side of --split (min), the ratio
+second/first and the valley between the apexes as a fraction of the first apex; saves the traces (CSV,
+used by make_figures.py for Figure S1) and a quick-look figure.
 
 Usage:
     python paper/glycan-validation/xic_pair.py --mzml run.mzML --mz 1936.7791 968.8932 646.2646 --z 1 2 3 \
@@ -61,9 +62,21 @@ def main():
         left, right = t <= a.split, t > a.split
         return integrate.trapezoid(y[left], t[left]), integrate.trapezoid(y[right], t[right])
 
+    def valley(t, y):
+        """Lowest point between the two apexes, as a fraction of the first isomer's apex."""
+        left, right = np.where(t <= a.split)[0], np.where(t > a.split)[0]
+        i, j = left[np.argmax(y[left])], right[np.argmax(y[right])]
+        return y[i:j + 1].min() / y[i]
+
     for name, (t, y) in (("MS XIC", (rt, xic)), ("FLD", (ft, fy))):
         l, r = split_areas(t, y)
-        print(f"{name:7s} area before {a.split} min: {l:.4g}   after: {r:.4g}   after/before: {r / l:.3f}")
+        print(f"{name:7s} area before {a.split} min: {l:.4g}   after: {r:.4g}   after/before: {r / l:.3f}   "
+              f"valley/first apex: {valley(t, y):.4f}")
+    import pandas as pd
+    csv = a.out.with_suffix(".csv")
+    pd.concat([pd.DataFrame({"trace": "MS", "time_min": rt, "intensity": xic}),
+               pd.DataFrame({"trace": "FLD", "time_min": ft, "intensity": fy})]).assign(split_min=a.split).to_csv(csv, index=False)
+    print(f"traces: {csv}")
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 4), sharex=True, constrained_layout=True)
     ax1.plot(ft, fy, lw=0.8, color="#1f4e79"); ax1.set_ylabel("Fluorescence")
