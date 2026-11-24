@@ -21,6 +21,9 @@ fi
 module load Python/3.11.3-GCCcore-12.3.0
 source ~/venvs/lcms/bin/activate
 cd ~/lcms-data-processor
+# use the code in this repository, not an older copy installed in the venv
+export PYTHONPATH=$HOME/lcms-data-processor${PYTHONPATH:+:$PYTHONPATH}
+python -c "import reference_compare, lcms_data_processor as l, inspect; print('code from:', reference_compare.__file__); assert 'height_fraction' in inspect.getsource(l.PeakDetector.detect_peaks)"
 lcms-batch --mzml $D/mzml_all/$R.mzML --targets cluster/trast_RFMS_targets.csv \
   --peak-mode sum --ppm 5 10 20 --width 3 5 --baseline-window 0.05 0.1 --out $OUT/$R
 # Fluorescence peak threshold: 0.005 (fraction of the region maximum) is the pre-set primary value for

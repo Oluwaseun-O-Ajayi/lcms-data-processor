@@ -7,12 +7,14 @@ cd ~/lcms-data-processor
 for f in cluster/trast_RFMS_targets.csv cluster/ms119_trast_RFMS_targets.csv cluster/ms119_afli_RFMS_targets.csv \
          cluster/ms119_cetux_RFMS_targets.csv cluster/trast_all.slurm cluster/ms119_quant.slurm \
          paper/glycan-validation/combine_replicates.py paper/glycan-validation/transfer_test.py \
-         paper/glycan-validation/diag_windows.py cluster/diag_windows.slurm; do
+         paper/glycan-validation/diag_windows.py cluster/diag_windows.slurm \
+         paper/glycan-validation/xic_pair.py cluster/xic_pairs.slurm tests/test_fld_detection.py; do
   [ -s "$f" ] || { echo "MISSING $f (run git pull first)"; exit 1; }
 done
 grep -q "^G0_1+," cluster/trast_RFMS_targets.csv || { echo "Old targets file: run git pull first"; exit 1; }
 grep -q "fldp" cluster/trast_all.slurm || { echo "Old trast_all.slurm: run git pull first"; exit 1; }
-grep -q "fld_coverage_pct" paper/glycan-validation/combine_replicates.py || { echo "Old combine_replicates.py: run git pull first"; exit 1; }
+grep -q "height_fraction=fld_prominence" reference_compare.py || { echo "Old reference_compare.py: run git pull first"; exit 1; }
+grep -q "fld_region_area" paper/glycan-validation/combine_replicates.py || { echo "Old combine_replicates.py: run git pull first"; exit 1; }
 mkdir -p ~/jobs/logs
 ENV="module load Python/3.11.3-GCCcore-12.3.0 && source ~/venvs/lcms/bin/activate && cd ~/lcms-data-processor"
 R=/scratch/$USER/glycan_data/pride/results
@@ -28,6 +30,7 @@ J4=$(sbatch --parsable --dependency=afterok:$J2:$J3 --job-name=transfer --partit
      --output=$HOME/jobs/logs/transfer_%j.out \
      --wrap="$ENV && $T --ref $G/trastuzumab_RFMS/per_run_per_glycan.csv --results $R/ms119 --out $G/ms119_transfer && $T --ref $G/trastuzumab_RFMS/per_run_per_glycan.csv --results $R/ms119/fldp0.01 --out $G/sensitivity/ms119_fldp0.01 && $T --ref $G/trastuzumab_RFMS/per_run_per_glycan.csv --results $R/ms119/fldp0.02 --out $G/sensitivity/ms119_fldp0.02")
 J5=$(sbatch --parsable --dependency=afterok:$J1:$J2 cluster/diag_windows.slurm)
-echo "Submitted: trast-all $J1, ms119q $J2, combine $J3, transfer $J4, diag $J5"
+J6=$(sbatch --parsable --dependency=afterok:$J1:$J2 cluster/xic_pairs.slurm)
+echo "Submitted: trast-all $J1, ms119q $J2, combine $J3, transfer $J4, diag $J5, xicpair $J6"
 echo "When 'sq --me' is empty, collect everything into one file with:"
-echo "  cat $HOME/jobs/logs/combine_$J3.out $HOME/jobs/logs/transfer_$J4.out $HOME/jobs/logs/diag_$J5.out > ~/results_all.txt"
+echo "  cat $HOME/jobs/logs/combine_$J3.out $HOME/jobs/logs/transfer_$J4.out $HOME/jobs/logs/diag_$J5.out $HOME/jobs/logs/xicpair_$J6.out > ~/results_all.txt"
