@@ -5,8 +5,10 @@ Usage (from the repository root):
     python paper/glycan-validation/make_figures.py
 
 Inputs are the result tables in paper/glycan-validation/data/, written by cluster/sweep.slurm,
-cluster/extras.slurm, the Skyline export, and cluster/procA_replicates.slurm.
-Outputs: paper/glycan-validation/figures/Figure1-3 (PNG and PDF), FigureS1, and numbers.txt.
+cluster/extras.slurm, the Skyline export, cluster/procA_replicates.slurm (fetuin, procainamide),
+combine_replicates.py and transfer_test.py (RapiFluor-MS data set PXD078897).
+Outputs: paper/glycan-validation/figures/Figure1-3 and FigureS2-S4 (PNG and PDF), TOC_graphic, and numbers.txt.
+Figure S1 (isomer pairs) is written by xic_pair.py (cluster/xic_pairs.slurm).
 """
 
 from pathlib import Path
@@ -21,6 +23,7 @@ from matplotlib.lines import Line2D  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 D2, DP, OUT = HERE / "data" / "fetuin_2AB", HERE / "data" / "procainamide", HERE / "figures"
+DT, DM = HERE / "data" / "trastuzumab_RFMS", HERE / "data" / "ms119_transfer"
 OUT.mkdir(exist_ok=True)
 
 plt.rcParams.update({
@@ -111,7 +114,8 @@ comb["ratio"] = comb.ms_pct / comb.fld_pct
 say("MS/FLD by antennae, NeuAc: " + "; ".join(f"{a}-ant {n} NeuAc {r:.2f}" for a, n, r in comb[["ant", "neuac", "ratio"]].values))
 
 # ------------------------------------------------------------------ Figure 1
-fig, (a, b) = plt.subplots(1, 2, figsize=(7.0, 3.2), gridspec_kw={"width_ratios": [1, 1.35]})
+fig1, (a, b, c1) = plt.subplots(1, 3, figsize=(7.0, 2.9), gridspec_kw={"width_ratios": [1, 1.25, 1]})
+fig = fig1
 for k, w in enumerate(sorted(ag.width.unique())):
     st = ag[ag.width == w].groupby("ppm")["mean_abs_diff_pct_points"].agg(["min", "max", "median"]).reindex(PPM)
     x = np.array(PPM) * (1 + (k - 1) * 0.06)
@@ -122,13 +126,13 @@ a.set_xticks(PPM)
 a.set_xticklabels([f"{p:g}" for p in PPM])
 a.minorticks_off()
 a.set_xlabel("Extraction window (± ppm)")
-a.set_ylabel("Mean |MS − FLD| (percentage points)")
+a.set_ylabel("Mean |MS − FLD| (points)")
 a.set_ylim(0, 8.5)
 a.yaxis.grid(True, color=GRID, lw=0.5)
 a.set_axisbelow(True)
 a.annotate(f"{two.n.min()}–{two.n.max()} of 8 species\nmatched at ±2 ppm", xy=(2.1, 7.3), xytext=(4.5, 7.7),
            fontsize=6.5, color=INK2, arrowprops=dict(arrowstyle="-", lw=0.5, color=INK2))
-a.legend(title="Minimum peak width", title_fontsize=7, frameon=False, loc="lower right")
+a.legend(title="Minimum peak width", title_fontsize=7, frameon=False, loc="upper right", bbox_to_anchor=(1.0, 0.86))
 tag(a, "A")
 
 y = np.arange(len(ORDER))[::-1]
@@ -146,10 +150,9 @@ b.set_xlabel("Relative abundance (%)")
 b.set_xlim(0, 36)
 b.xaxis.grid(True, color=GRID, lw=0.5)
 b.set_axisbelow(True)
-b.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.4, -0.18), ncol=3, handletextpad=0.3, columnspacing=1.0)
-tag(b, "B", x=-0.3)
-fig.tight_layout(w_pad=2.5)
-save(fig, "Figure1_processing_settings")
+b.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.35, -0.2), ncol=2, handletextpad=0.3, columnspacing=1.0)
+tag(b, "B", x=-0.42)
+a1, b1 = a, b
 
 # ------------------------------------------------------------------ Figure 2
 fig, (a, b) = plt.subplots(1, 2, figsize=(7.0, 3.1))
@@ -208,7 +211,7 @@ b.legend(handles=[Line2D([], [], color=CAT[0], marker="^", ms=6, mec="white", la
          frameon=False, loc="upper right", fontsize=6.3)
 tag(b, "B")
 fig.tight_layout(w_pad=2.5)
-save(fig, "Figure2_ms_vs_fluorescence")
+save(fig, "FigureS2_fetuin_ms_vs_fluorescence")
 
 # ------------------------------------------------------------------ procainamide numbers
 say("\n== Procainamide runs")
@@ -324,7 +327,7 @@ fig.legend(handles=[Line2D([], [], ls="-", marker="o", color=CAT[0], ms=3.5, lab
                     Line2D([], [], ls="-", marker="^", color=CAT[2], ms=3.5, label="TFN-ProA")],
            frameon=False, loc="lower center", ncol=3, fontsize=6.5, bbox_to_anchor=(0.5, -0.01))
 fig.subplots_adjust(left=0.08, right=0.98, top=0.95, bottom=0.14)
-save(fig, "Figure3_procainamide")
+save(fig, "FigureS3_procainamide")
 
 # ------------------------------------------------------------------ Figure S1: synthetic window benchmark
 wb = pd.read_csv(D2 / "synthetic_window_benchmark.csv")
@@ -345,6 +348,190 @@ for ax, scen, letter in [(a, "mass error", "A"), (b, wb.scenario[wb.scenario != 
     tag(ax, letter)
 a.set_ylabel("Recovered area (% of true)")
 fig.tight_layout(w_pad=2)
-save(fig, "FigureS1_synthetic_window_benchmark")
+save(fig, "FigureS4_synthetic_window_benchmark")
+
+
+# ------------------------------------------------------------------ RapiFluor-MS data set (PXD078897)
+GLY = ["Man5", "G0", "G0F", "G1F_a", "G1F_b", "G2F"]  # in order of mass
+GLAB = {"Man5": "Man5", "G0": "G0", "G0F": "G0F", "G1F_a": "G1F (early)", "G1F_b": "G1F (late)", "G2F": "G2F", "G1": "G1a"}
+DAYM = {1: "o", 2: "s", 3: "^"}
+pr = pd.read_csv(DT / "per_run_per_glycan.csv")
+say("\n== RapiFluor-MS, MS154 trastuzumab (9 runs, 3 days)")
+dd = pr.ms_pct - pr.fld_pct
+say(f"pooled: n {len(dd)}, MAD {dd.abs().mean():.3f}, LoA +/-{1.96 * dd.std(ddof=1):.3f}, "
+    f"r {np.corrcoef(pr.ms_pct, pr.fld_pct)[0, 1]:.4f}")
+pr["rf"] = pr.ms_pct / pr.fld_pct
+rf_all = pr.groupby("glycan").rf.mean().reindex(GLY)
+rf_day = pr.groupby(["glycan", "day"]).rf.mean().unstack().reindex(GLY)
+say("response factor, mean of 9 runs: " + ", ".join(f"{g} {v:.3f}" for g, v in rf_all.items()))
+say("response factor range over days: " + ", ".join(f"{g} {r.min():.3f}-{r.max():.3f}" for g, r in rf_day.iterrows()))
+bias = []
+for g, x in pr.groupby("glycan"):
+    half = __import__("scipy.stats", fromlist=["t"]).t.ppf(0.975, len(x) - 1) * (x.ms_pct - x.fld_pct).std(ddof=1) / np.sqrt(len(x))
+    m_ = (x.ms_pct - x.fld_pct).mean()
+    bias.append({"glycan": g, "bias": m_, "lo": m_ - half, "hi": m_ + half})
+bias = pd.DataFrame(bias).set_index("glycan").reindex(GLY)
+say("bias [95% CI]: " + ", ".join(f"{g} {r.bias:+.2f} [{r.lo:.2f}, {r.hi:.2f}]" for g, r in bias.iterrows()))
+sens = pd.read_csv(DT / "settings_sensitivity.csv")
+bys = sens.groupby(["ppm", "width", "baseline_window"]).mean_abs_diff.mean()
+say(f"settings: mean MAD over runs {bys.min():.3f}-{bys.max():.3f} across {len(bys)} settings")
+cal = pd.read_csv(DT / "calibration_cross_day.csv")
+cd = cal.groupby("train_day")[["mad_before", "mad_after", "loa_halfwidth_before", "loa_halfwidth_after"]].mean()
+say(f"cross-day calibration: MAD {cal.mad_before.mean():.3f} -> {cal.mad_after.mean():.3f}; by training day after "
+    f"{cd.mad_after.min():.3f}-{cd.mad_after.max():.3f}; LoA half-width {cd.loa_halfwidth_before.min():.2f}-"
+    f"{cd.loa_halfwidth_before.max():.2f} -> {cd.loa_halfwidth_after.min():.2f}-{cd.loa_halfwidth_after.max():.2f}")
+full = pd.read_csv(DM / "full_profile.csv")
+trf = pd.read_csv(DM / "transfer.csv")
+wpr = pd.read_csv(DM / "within_protein.csv")
+PROT = {"Trast": "Trastuzumab", "Afli": "Aflibercept", "Cetux": "Cetuximab"}
+for p_, g in full.groupby("protein"):
+    say(f"MS119 {p_}: n {int(g.n.iloc[0])}, MAD {g.mean_abs_diff.mean():.3f}, LoA +/-{g.loa_halfwidth.mean():.3f}, "
+        f"coverage {g.fld_coverage_pct.mean():.1f}%")
+wps = wpr.groupby("protein")[["mad_before", "mad_after", "loa_halfwidth_before", "loa_halfwidth_after"]].mean()
+trs = trf.groupby("protein")[["mad_before", "mad_after", "loa_halfwidth_before", "loa_halfwidth_after"]].mean()
+for nm, tb in (("within protein", wps), ("transfer from MS154", trs)):
+    for p_, r in tb.iterrows():
+        say(f"{nm}, {p_}: MAD {r.mad_before:.3f} -> {r.mad_after:.3f}, LoA {r.loa_halfwidth_before:.2f} -> {r.loa_halfwidth_after:.2f}")
+
+# Figure 1C: MS154 settings
+for k, w in enumerate(sorted(sens.width.unique())):
+    st = sens[sens.width == w].groupby("ppm").mean_abs_diff
+    x = np.array(sorted(sens.ppm.unique())) * (1 + (k - 0.5) * 0.08)
+    mean_, lo, hi = st.mean().values, st.min().values, st.max().values
+    c1.errorbar(x, mean_, yerr=[mean_ - lo, hi - mean_], color=CAT[k], marker=MARK[k], ms=4.5, mec="white",
+                mew=0.6, capsize=2, elinewidth=0.8, label=f"{w} points")
+c1.set_xscale("log")
+c1.set_xticks(sorted(sens.ppm.unique()))
+c1.set_xticklabels([f"{p_:g}" for p_ in sorted(sens.ppm.unique())])
+c1.minorticks_off()
+c1.set_xlim(3.5, 28)
+c1.set_ylim(0, 1.2)
+c1.set_xlabel("Extraction window (± ppm)")
+c1.set_ylabel("Mean |MS − FLD| (points)")
+c1.yaxis.grid(True, color=GRID, lw=0.5)
+c1.set_axisbelow(True)
+c1.legend(title="Minimum peak width", title_fontsize=7, frameon=False, loc="upper right")
+tag(c1, "C")
+a1.set_title("2-AB fetuin, Q-TOF", fontsize=7, color=INK2)
+b1.set_title("2-AB fetuin, Q-TOF", fontsize=7, color=INK2)
+c1.set_title("RapiFluor-MS, Orbitrap", fontsize=7, color=INK2)
+fig1.tight_layout(w_pad=1.6)
+save(fig1, "Figure1_processing_settings")
+
+# Figure 2: MS154 agreement
+fig, (a, b, c) = plt.subplots(1, 3, figsize=(7.0, 2.6), gridspec_kw={"width_ratios": [1.05, 1.15, 1]})
+y = np.arange(len(GLY))[::-1]
+a.axvline(0, color=INK2, lw=0.6)
+a.hlines(y, bias.lo, bias.hi, color=INK, lw=1.6)
+a.plot(bias.bias, y, "o", color=INK, ms=4.5, mec="white", mew=0.6)
+a.set_yticks(y)
+a.set_yticklabels([GLAB[g] for g in GLY])
+a.set_xlabel("MS − FLD (points), mean and 95% CI")
+a.set_xlim(-1.2, 1.5)
+a.xaxis.grid(True, color=GRID, lw=0.5)
+a.set_axisbelow(True)
+tag(a, "A", x=-0.38)
+mean_ = (pr.ms_pct + pr.fld_pct) / 2
+loa = 1.96 * dd.std(ddof=1)
+for k, (day, g) in enumerate(pr.groupby("day")):
+    b.plot((g.ms_pct + g.fld_pct) / 2, g.ms_pct - g.fld_pct, DAYM[day], color=CAT[k], ms=4, mec="white", mew=0.5,
+           ls="", label=f"Day {day}")
+for v, ls_ in ((0, "-"), (loa, "--"), (-loa, "--")):
+    b.axhline(v, color=INK2, lw=0.7, ls=ls_)
+b.text(0.95, loa, f"+{loa:.2f}", fontsize=6.3, color=INK2, va="bottom", ha="left")
+b.text(0.95, -loa, f"−{loa:.2f}", fontsize=6.3, color=INK2, va="top", ha="left")
+b.set_xscale("log")
+b.set_xticks([1, 2, 5, 10, 20, 50])
+b.set_xticklabels(["1", "2", "5", "10", "20", "50"])
+b.minorticks_off()
+b.set_xlim(0.9, 55)
+b.set_ylim(-2, 2)
+b.set_xlabel("Mean of MS and FLD (%)")
+b.set_ylabel("MS − FLD (points)")
+b.legend(frameon=False, loc="lower left", fontsize=6.3, handletextpad=0.1, ncol=3, columnspacing=0.8)
+tag(b, "B")
+c.axhline(1, color=INK2, lw=0.7, ls="--")
+xg = np.arange(len(GLY))
+for k, day in enumerate(sorted(rf_day.columns)):
+    c.plot(xg + (k - 1) * 0.18, rf_day[day].values, DAYM[day], color=CAT[k], ms=4.2, mec="white", mew=0.5, ls="",
+           label=f"Day {day}")
+c.set_xticks(xg)
+c.set_xticklabels([GLAB[g].replace(" (", "\n(") for g in GLY], fontsize=6.3)
+c.set_ylabel("Response factor (MS% / FLD%)")
+c.set_ylim(0.55, 1.2)
+c.yaxis.grid(True, color=GRID, lw=0.5)
+c.set_axisbelow(True)
+c.legend(frameon=False, loc="lower right", fontsize=6.3, handletextpad=0.1)
+tag(c, "C")
+fig.tight_layout(w_pad=1.4)
+save(fig, "Figure2_ms154_agreement")
+
+# Figure 3: calibration tests
+rows = [("Cross-day (MS154)", "Trastuzumab", cal.mad_before.mean(), cal.mad_after.mean())]
+rows += [("Within protein (MS119)", PROT[p_], r.mad_before, r.mad_after) for p_, r in wps.loc[["Trast", "Afli", "Cetux"]].iterrows()]
+rows += [("Transfer MS154 → MS119", PROT[p_], r.mad_before, r.mad_after) for p_, r in trs.loc[["Trast", "Afli", "Cetux"]].iterrows()]
+fig, ax = plt.subplots(figsize=(3.4, 3.0))
+ypos, labels, yy, prev = [], [], 0, None
+for grp, prot, bef, aft in rows:
+    if grp != prev:
+        yy -= 0.45 if prev is not None else 0
+        ax.text(0.052, yy, grp, fontsize=7, fontweight="bold", color=INK, va="center")
+        yy -= 0.75
+        prev = grp
+    col = CAT[0] if aft < bef else CAT[1]
+    ax.annotate("", xy=(aft, yy), xytext=(bef, yy), arrowprops=dict(arrowstyle="-|>", color=col, lw=1.2, shrinkA=3, shrinkB=3))
+    ax.plot(bef, yy, "o", mfc="white", mec=col, mew=1.1, ms=5)
+    ax.plot(aft, yy, "o", color=col, ms=5, mec="white", mew=0.5)
+    ypos.append(yy)
+    labels.append(prot)
+    yy -= 0.75
+ax.set_yticks(ypos)
+ax.set_yticklabels(labels)
+ax.set_xscale("log")
+ax.set_xticks([0.1, 0.2, 0.5, 1, 2, 5])
+ax.set_xticklabels(["0.1", "0.2", "0.5", "1", "2", "5"])
+ax.minorticks_off()
+ax.set_xlim(0.05, 8)
+ax.set_ylim(yy + 0.3, 0.5)
+ax.set_xlabel("Mean |MS − FLD| (points)")
+ax.xaxis.grid(True, color=GRID, lw=0.5)
+ax.set_axisbelow(True)
+ax.legend(handles=[Line2D([], [], ls="", marker="o", mfc="white", mec=INK2, ms=5, label="Before"),
+                   Line2D([], [], ls="", marker="o", color=INK2, ms=5, label="After"),
+                   Line2D([], [], color=CAT[0], lw=1.2, label="Decreased"),
+                   Line2D([], [], color=CAT[1], lw=1.2, label="Increased")],
+          frameon=False, fontsize=6.3, loc="lower center", bbox_to_anchor=(0.45, 1.0), ncol=4, columnspacing=0.8,
+          handletextpad=0.3)
+fig.tight_layout()
+save(fig, "Figure3_calibration")
+
+# TOC graphic (3.25 x 1.75 in)
+fig = plt.figure(figsize=(3.25, 1.75))
+fig.text(0.03, 0.93, "GlyVAS: MS-only glycan profiles tested against fluorescence", fontsize=7, fontweight="bold", va="top")
+t1 = fig.add_axes([0.12, 0.27, 0.36, 0.5])
+t1.bar(range(len(GLY)), rf_all.values, color=CAT[0], width=0.65)
+t1.axhline(1, color=INK2, lw=0.7, ls="--")
+t1.set_xticks(range(len(GLY)))
+t1.set_xticklabels([GLAB[g].replace(" (early)", "a").replace(" (late)", "b") for g in GLY], fontsize=5.5, rotation=40, ha="right", rotation_mode="anchor")
+t1.set_ylim(0.5, 1.15)
+t1.set_ylabel("MS / FLD", fontsize=6)
+t1.tick_params(labelsize=5.5)
+t1.set_title("Response factor", fontsize=6.5)
+t2 = fig.add_axes([0.71, 0.27, 0.26, 0.5])
+pairs = [("Same sequence", cal.mad_before.mean(), cal.mad_after.mean()),
+         ("Next sequence", trs.loc["Trast", "mad_before"], trs.loc["Trast", "mad_after"])]
+for i, (lab, bef, aft) in enumerate(pairs):
+    col = CAT[0] if aft < bef else CAT[1]
+    t2.annotate("", xy=(aft, -i), xytext=(bef, -i), arrowprops=dict(arrowstyle="-|>", color=col, lw=1.1, shrinkA=2, shrinkB=2))
+    t2.plot(bef, -i, "o", mfc="white", mec=col, ms=4)
+    t2.plot(aft, -i, "o", color=col, ms=4, mec="white", mew=0.4)
+t2.set_yticks([0, -1])
+t2.set_yticklabels([p_[0] for p_ in pairs], fontsize=5.5)
+t2.set_ylim(-1.6, 0.6)
+t2.set_xlim(0, 0.8)
+t2.tick_params(labelsize=5.5)
+t2.set_xlabel("|MS − FLD| (points)", fontsize=6)
+t2.set_title("After calibration", fontsize=6.5)
+save(fig, "TOC_graphic")
 
 (HERE / "numbers.txt").write_text("\n".join(lines) + "\n")
