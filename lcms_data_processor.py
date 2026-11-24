@@ -280,7 +280,7 @@ class PeakDetector:
         self.baseline = None
     
     def detect_peaks(self, prominence=0.1, width=5, height=None, baseline_window=0.1,
-                     limit_halfwidths=3.4, threshold_range=None):
+                     limit_halfwidths=3.4, threshold_range=None, height_fraction=0.05):
         """
         Detect peaks with scipy.signal.find_peaks on the baseline-corrected trace.
 
@@ -319,7 +319,7 @@ class PeakDetector:
             if inside.any():
                 scale = smooth[inside].max()
         if height is None:
-            height = max(0.05 * scale, 3.0 * self.noise_sd)
+            height = max(height_fraction * scale, 3.0 * self.noise_sd)
         idx, props = signal.find_peaks(smooth, prominence=max(prominence * scale, 3.0 * self.noise_sd),
                                        width=width, height=height)
         half = signal.peak_widths(smooth, idx, rel_height=0.5)

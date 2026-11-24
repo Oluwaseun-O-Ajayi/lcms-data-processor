@@ -33,6 +33,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+from scipy import integrate
 import pandas as pd
 from scipy import stats
 
@@ -125,7 +126,10 @@ def compare_fld(reader, targets_long, fld_match, ppm, width, baseline_window,
     hi = ms['ms_rt'].max() - delay + margin
     region = fld[(fld['time'] >= lo) & (fld['time'] <= hi)].reset_index(drop=True)
     det = PeakDetector(region)
-    det.detect_peaks(prominence=fld_prominence, width=fld_width, baseline_window=fld_baseline_window)
+    # The height floor follows the prominence setting, so --fld-prominence alone sets the smallest
+    # fluorescence peak that is detected (the 5% default height floor is meant for MS chromatograms).
+    det.detect_peaks(prominence=fld_prominence, width=fld_width, baseline_window=fld_baseline_window,
+                     height_fraction=fld_prominence)
     det.integrate_peaks()
     peaks = det.peaks.reset_index(drop=True)
 
@@ -162,7 +166,10 @@ def compare_fld(reader, targets_long, fld_match, ppm, width, baseline_window,
     summary = agreement(ms.loc[ok, 'ms_pct'], ms.loc[ok, 'fld_pct']) if ok.sum() else {'n': 0}
     summary.update({'delay_min': delay, 'delay_correlation': score, 'ppm': ppm, 'width': width,
                     'baseline_window': baseline_window, 'fld_region_min': lo, 'fld_region_max': hi,
-                    'fld_peaks_detected': len(peaks)})
+                    'fld_peaks_detected': len(peaks),
+                    # baseline-corrected fluorescence area of the whole glycan region, detected or not
+                    'fld_region_area': float(integrate.trapezoid(region['intensity'].to_numpy() - det.baseline.to_numpy(),
+                                                          region['time'].to_numpy()))})
     if return_peaks:
         return ms, summary, peaks
     return ms, summary
