@@ -26,6 +26,11 @@ source ~/venvs/lcms/bin/activate
 cd ~/lcms-data-processor
 echo "run: $R  targets: $T"
 lcms-batch --mzml $D/mzml_all/$R.mzML --targets $T --peak-mode sum --ppm 10 --width 5 --baseline-window 0.1 --out $OUT/$R
-lcms-compare fld --mzml $D/mzml_all/$R.mzML --targets $OUT/${R}_targets.csv \
-  --fld Emission --fld-prominence 0.005 --ppm 10 --width 5 --baseline-window 0.1 --out $OUT/${R}_fld
+# Fluorescence peak threshold: 0.005 (fraction of the region maximum) is the pre-set primary value for
+# every dataset; 0.01 and 0.02 are run as a sensitivity check and written to sub-folders.
+for P in 0.005 0.01 0.02; do
+  if [ "$P" = "0.005" ]; then O=$OUT; else O=$OUT/fldp$P; mkdir -p $O; fi
+  lcms-compare fld --mzml $D/mzml_all/$R.mzML --targets $OUT/${R}_targets.csv \
+    --fld Emission --fld-prominence $P --ppm 10 --width 5 --baseline-window 0.1 --out $O/${R}_fld
+done
 echo "== DONE $R"
