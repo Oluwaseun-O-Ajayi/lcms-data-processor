@@ -1,2 +1,0 @@
-n,mean_abs_diff_pct_points,bias_pct_points,loa_low,loa_high,pearson_r,delay_min,delay_correlation,ppm,width,baseline_window,fld_region_min,fld_region_max,fld_peaks_detected,fld_region_area
-14,1.683205445440596,8.247371040072592e-16,-4.863176176849116,4.863176176849118,0.9348703323399483,0.018962000000414037,0.18418179510248656,10.0,5,0.1,47.05463699999958,75.57809699999959,24,118623654.21708333
