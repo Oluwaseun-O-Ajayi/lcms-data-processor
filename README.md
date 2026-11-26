@@ -1,4 +1,4 @@
-# GlyVAS (formerly LC-MS Data Processor)
+# GlyVAS
 
 **Transparent processing of LC-MS chromatograms, from exported CSV traces or mzML files: baseline, peak detection and integration, signal-to-noise, peak shape, resolution and linear calibration.**
 
@@ -113,7 +113,7 @@ Bug reports, questions and pull requests are welcome; see [CONTRIBUTING.md](CONT
 
 ## Citation
 
-Ajayi, O. O. (2026). *GlyVAS (formerly LC-MS Data Processor)*. Zenodo. https://doi.org/10.5281/zenodo.21652568 (all versions; see `CITATION.cff`).
+Ajayi, O. O. (2026). *GlyVAS*. Zenodo. https://doi.org/10.5281/zenodo.21652568 (all versions; see `CITATION.cff`).
 
 ## License
 
