@@ -8,7 +8,7 @@ Inputs are the result tables in paper/glycan-validation/data/, written by cluste
 cluster/extras.slurm, the Skyline export, cluster/procA_replicates.slurm (fetuin, procainamide),
 combine_replicates.py, transfer_test.py and lcms-compare fld (RapiFluor-MS data set PXD078897).
 Outputs: paper/glycan-validation/figures/Figure1-3 and FigureS1-S4 (PNG and PDF), TOC_graphic, and numbers.txt.
-Figure S1 (isomer pairs) needs the traces written by xic_pair.py (cluster/xic_pairs.slurm).
+Figure S4 (isomer pairs) needs the traces written by xic_pair.py (cluster/xic_pairs.slurm).
 """
 
 from pathlib import Path
@@ -211,7 +211,7 @@ b.legend(handles=[Line2D([], [], color=CAT[0], marker="^", ms=6, mec="white", la
          frameon=False, loc="upper right", fontsize=6.3)
 tag(b, "B")
 fig.tight_layout(w_pad=2.5)
-save(fig, "FigureS2_fetuin_ms_vs_fluorescence")
+save(fig, "FigureS3_fetuin_ms_vs_fluorescence")
 
 # ------------------------------------------------------------------ procainamide numbers
 say("\n== Procainamide runs")
@@ -327,7 +327,7 @@ fig.legend(handles=[Line2D([], [], ls="-", marker="o", color=CAT[0], ms=3.5, lab
                     Line2D([], [], ls="-", marker="^", color=CAT[2], ms=3.5, label="TFN-ProA")],
            frameon=False, loc="lower center", ncol=3, fontsize=6.5, bbox_to_anchor=(0.5, -0.01))
 fig.subplots_adjust(left=0.08, right=0.98, top=0.95, bottom=0.14)
-save(fig, "FigureS3_procainamide")
+save(fig, "FigureS2_procainamide")
 
 # ------------------------------------------------------------------ Figure S1: synthetic window benchmark
 wb = pd.read_csv(D2 / "synthetic_window_benchmark.csv")
@@ -348,7 +348,7 @@ for ax, scen, letter in [(a, "mass error", "A"), (b, wb.scenario[wb.scenario != 
     tag(ax, letter)
 a.set_ylabel("Recovered area (% of true)")
 fig.tight_layout(w_pad=2)
-save(fig, "FigureS4_synthetic_window_benchmark")
+save(fig, "FigureS1_synthetic_window_benchmark")
 
 
 # ------------------------------------------------------------------ RapiFluor-MS data set (PXD078897)
@@ -521,7 +521,7 @@ fig.tight_layout()
 save(fig, "Figure3_calibration")
 
 
-# Figure S1: G1F isomer pairs (traces written by xic_pair.py)
+# Figure S4: G1F isomer pairs (traces written by xic_pair.py)
 PAIRS = [("pair_trast154_01.csv", "MS154 trastuzumab"), ("pair_trast119_01.csv", "MS119 trastuzumab"),
          ("pair_afli01.csv", "MS119 aflibercept")]
 if all((HERE / "data" / "diag" / f).exists() for f, _ in PAIRS):
@@ -549,7 +549,7 @@ if all((HERE / "data" / "diag" / f).exists() for f, _ in PAIRS):
     h_, l_ = axs[0].get_legend_handles_labels()
     fig.legend(h_, l_, frameon=False, fontsize=7, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.0))
     fig.tight_layout(w_pad=1.0, rect=(0, 0, 1, 0.9))
-    save(fig, "FigureS1_isomer_pairs")
+    save(fig, "FigureS4_isomer_pairs")
 
 # TOC graphic (3.25 x 1.75 in)
 fig = plt.figure(figsize=(3.25, 1.75))
@@ -578,6 +578,7 @@ t2.set_xlim(0, 0.8)
 t2.tick_params(labelsize=5.5)
 t2.set_xlabel("|MS − FLD| (points)", fontsize=6)
 t2.set_title("After calibration", fontsize=6.5)
+fig.savefig(OUT / "TOC_graphic.tif", dpi=600, pil_kwargs={"compression": "tiff_lzw"})
 save(fig, "TOC_graphic")
 
 (HERE / "numbers.txt").write_text("\n".join(lines) + "\n")

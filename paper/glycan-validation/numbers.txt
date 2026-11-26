@@ -48,3 +48,29 @@ TFN-ProA A2G2: ±10 29.0, ±20 14.9, ±30 30.9, ±50 34.3
 TFN-ProA A2G2S2: ±10 3.4, ±20 2.2, ±30 4.7, ±50 7.7
 TFN-ProA A2G2 2+ area by window: ±10 2.16e+05, ±20 2.28e+05, ±30 8.16e+05, ±50 1.09e+06
 QC: included signal 6.93e+07-2.51e+08, ACN ratio 0.048-0.200; excluded signal 8.49e+04-4.03e+06, ACN ratio 0.493-8.285; gap 17.2-fold; 2-AB signal max 0.0
+
+== RapiFluor-MS, MS154 trastuzumab (9 runs, 3 days)
+pooled: n 54, MAD 0.599, LoA +/-1.353, r 0.9991
+response factor, mean of 9 runs: Man5 0.667, G0 0.880, G0F 0.987, G1F_a 1.034, G1F_b 1.017, G2F 1.089
+response factor range over days: Man5 0.645-0.684, G0 0.868-0.888, G0F 0.981-0.992, G1F_a 1.022-1.041, G1F_b 1.013-1.022, G2F 1.084-1.094
+bias [95% CI]: Man5 -0.63 [-0.67, -0.59], G0 -0.54 [-0.60, -0.49], G0F -0.62 [-0.93, -0.31], G1F_a +1.02 [0.75, 1.30], G1F_b +0.17 [0.11, 0.23], G2F +0.60 [0.52, 0.68]
+settings: mean MAD over runs 0.595-0.634 across 12 settings
+cross-day calibration: MAD 0.599 -> 0.189; by training day after 0.172-0.214; LoA half-width 1.32-1.59 -> 0.51-0.64
+MS119 Afli: n 14, MAD 1.615, LoA +/-4.750, coverage 95.0%
+MS119 Cetux: n 11, MAD 2.038, LoA +/-6.052, coverage 89.7%
+MS119 Trast: n 7, MAD 0.376, LoA +/-0.854, coverage 98.2%
+within protein, Afli: MAD 1.615 -> 0.326, LoA 4.75 -> 1.24
+within protein, Cetux: MAD 2.038 -> 2.478, LoA 6.05 -> 7.51
+within protein, Trast: MAD 0.376 -> 0.091, LoA 0.85 -> 0.26
+transfer from MS154, Afli: MAD 3.670 -> 5.275, LoA 9.89 -> 15.05
+transfer from MS154, Cetux: MAD 0.586 -> 0.665, LoA 1.62 -> 1.84
+transfer from MS154, Trast: MAD 0.352 -> 0.591, LoA 0.81 -> 1.66
+MS119 Trast: 3 runs, MS/FLD summed area 2.86, replicate CV of relative abundance MS max 1.5%, FLD max 0.6%
+MS119 Afli: 3 runs, MS/FLD summed area 7.10, replicate CV of relative abundance MS max 8.9%, FLD max 2.5%
+MS119 Cetux: 3 runs, MS/FLD summed area 0.55, replicate CV of relative abundance MS max 69.8%, FLD max 4.9%
+isomer pair MS154 trastuzumab: FLD late/early 0.342
+isomer pair MS154 trastuzumab: MS late/early 0.339
+isomer pair MS119 trastuzumab: FLD late/early 0.342
+isomer pair MS119 trastuzumab: MS late/early 0.370
+isomer pair MS119 aflibercept: FLD late/early 0.291
+isomer pair MS119 aflibercept: MS late/early 0.403
