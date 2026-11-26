@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 
-title: "LC-MS Data Processor"
+title: "GlyVAS (formerly LC-MS Data Processor)"
 
 authors:
   - family-names: "Ajayi"
@@ -10,9 +10,9 @@ authors:
     affiliation: "University of Georgia"
     orcid: "https://orcid.org/0000-0003-0040-7217"
 
-version: "1.4.0"
+version: "2.0.0"
 doi: "10.5281/zenodo.21652568"
-date-released: "2026-11-13"
+date-released: "2026-11-25"
 
 url: "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"
 repository-code: "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"
@@ -31,14 +31,22 @@ keywords:
   - bioanalytical-chemistry
   - reproducible-research
   - python
+  - glycomics
+  - glycan
+  - fluorescence-detection
+  - response-factor
 
 abstract: >
-  LC-MS Data Processor is an open-source Python workflow
-  for chromatogram processing, extracted-ion
-  chromatograms from mzML via pyOpenMS, peak integration,
-  calibration-curve fitting, quantification,
-  and quality-control reporting. The software
-  provides a reproducible framework for LC-MS
-  data analysis using exported time-intensity
-  chromatograms or mzML files and includes visualization,
-  reporting, and educational workflow examples.
+  GlyVAS (Glycan Validated Abundances from Spectra;
+  formerly LC-MS Data Processor) is open-source Python
+  software that quantifies labeled glycans from mzML
+  files over a grid of processing settings, compares the
+  result with the fluorescence trace from the same
+  injection and with Skyline, and fits per-glycan
+  response factors that are tested on runs not used to
+  fit them. Its target calculator covers N- and
+  O-glycans, milk oligosaccharides and glycosaminoglycan
+  disaccharides. It also provides general chromatogram
+  processing: baseline, peak detection and integration,
+  signal-to-noise, peak shape, resolution and linear
+  calibration.

@@ -1,14 +1,19 @@
 """
-Glycan target library: m/z values for extracted-ion chromatograms of released N-glycans.
+Glycan target library: m/z values for extracted-ion chromatograms of released glycans.
 
 Compositions are written as residue counts, either long form ("HexNAc4Hex5dHex1NeuAc2")
-or short form ("N4H5F1S2"). Monoisotopic masses are computed from residue masses
+or short form ("N4H5F1S2"). Residues cover N- and O-glycans and milk oligosaccharides
+(Hex, HexNAc, dHex, NeuAc, NeuGc) and glycosaminoglycan disaccharides (HexA, uronic acid;
+DeltaHexA, 4,5-unsaturated uronic acid from lyase digestion; HexN, glucosamine; Pent;
+Sulfo, sulfate). Short codes: H, N, F, S, G, A (HexA), U (DeltaHexA), P (Pent),
+Hn (HexN) and Su (Sulfo). Monoisotopic masses are computed from residue masses
 (glycan = sum of residues + H2O), the reducing-end label shift and the adduct.
 
 Label shifts assume reductive amination (label + glycan - H2O + 2H):
 
     2-AB (2-aminobenzamide, C7H8N2O)        +120.068748
     2-AA (2-aminobenzoic acid, C7H7NO2)     +121.052764
+    2-AMAC (2-aminoacridone, C13H10N2O)     +194.084398
     procainamide (C13H21N3O)                +219.173547
     RapiFluor-MS (urea link, not reductive amination; adds C17H21N5O)  +311.174610
     reduced (alditol, +2H)                  +2.015650
@@ -22,7 +27,8 @@ import re
 import pandas as pd
 
 # Monoisotopic element masses (IUPAC/AME)
-ELEMENT = {'C': 12.0, 'H': 1.00782503207, 'N': 14.0030740048, 'O': 15.99491461956}
+ELEMENT = {'C': 12.0, 'H': 1.00782503207, 'N': 14.0030740048, 'O': 15.99491461956,
+           'S': 31.97207100}
 PROTON = 1.007276466812
 
 # Residue (dehydrated monosaccharide) formulas
@@ -32,13 +38,22 @@ RESIDUE_FORMULA = {
     'dHex': {'C': 6, 'H': 10, 'O': 4},
     'NeuAc': {'C': 11, 'H': 17, 'N': 1, 'O': 8},
     'NeuGc': {'C': 11, 'H': 17, 'N': 1, 'O': 9},
+    'HexA': {'C': 6, 'H': 8, 'O': 6},
+    'DeltaHexA': {'C': 6, 'H': 6, 'O': 5},
+    'HexN': {'C': 6, 'H': 11, 'N': 1, 'O': 4},
+    'Pent': {'C': 5, 'H': 8, 'O': 4},
+    'Sulfo': {'S': 1, 'O': 3},
 }
-SHORT = {'H': 'Hex', 'N': 'HexNAc', 'F': 'dHex', 'S': 'NeuAc', 'G': 'NeuGc'}
+SHORT = {'H': 'Hex', 'N': 'HexNAc', 'F': 'dHex', 'S': 'NeuAc', 'G': 'NeuGc',
+         'A': 'HexA', 'U': 'DeltaHexA', 'Hn': 'HexN', 'P': 'Pent', 'Su': 'Sulfo'}
+LONG_PATTERN = r'(HexNAc|HexA|HexN|Hex|DeltaHexA|dHex|NeuAc|NeuGc|Pent|Sulfo)(\d+)'
+SHORT_PATTERN = r'(Hn|Su|[HNFSGAUP])(\d+)'
 
 LABEL_FORMULA = {
     '2-AB': {'C': 7, 'H': 8, 'N': 2, 'O': 1},
     '2-AA': {'C': 7, 'H': 7, 'N': 1, 'O': 2},
     'procainamide': {'C': 13, 'H': 21, 'N': 3, 'O': 1},
+    '2-AMAC': {'C': 13, 'H': 10, 'N': 2, 'O': 1},
 }
 # Labels attached by a reaction other than reductive amination: element counts added to the free glycan.
 # RapiFluor-MS: glycosylamine (+NH3 -H2O) joined through a urea (+CO -2H) to
@@ -47,7 +62,8 @@ LABEL_ADDED_FORMULA = {
     'RapiFluor-MS': {'C': 17, 'H': 21, 'N': 5, 'O': 1},
 }
 LABEL_ALIASES = {'RFMS': 'RapiFluor-MS', 'rapifluor-ms': 'RapiFluor-MS', 'ProA': 'procainamide'}
-ADDUCT = {'H': PROTON, 'Na': 22.98922070, 'NH4': 18.03382555}
+# '-H' gives deprotonated ions [M - zH]^z- (m/z reported as a positive number).
+ADDUCT = {'H': PROTON, 'Na': 22.98922070, 'NH4': 18.03382555, '-H': -PROTON}
 
 
 def formula_mass(formula):
@@ -83,11 +99,11 @@ def parse_composition(text):
     {'HexNAc': 4, 'Hex': 5, 'dHex': 1, 'NeuAc': 2}
     """
     text = str(text).strip()
-    long_form = re.findall(r'(HexNAc|Hex|dHex|NeuAc|NeuGc)(\d+)', text)
+    long_form = re.findall(LONG_PATTERN, text)
     if long_form and ''.join(f'{a}{b}' for a, b in long_form) == text:
         tokens = long_form
     else:
-        short = re.findall(r'([HNFSG])(\d+)', text)
+        short = re.findall(SHORT_PATTERN, text)
         if not short or ''.join(f'{a}{b}' for a, b in short) != text:
             raise ValueError(f"Cannot parse composition '{text}'. Use e.g. N4H5F1S2 or HexNAc4Hex5dHex1NeuAc2")
         tokens = [(SHORT[a], b) for a, b in short]

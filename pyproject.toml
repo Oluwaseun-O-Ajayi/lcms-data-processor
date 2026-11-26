@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lcms-data-processor"
-version = "1.4.0"
-description = "Transparent processing of LC-MS chromatograms from CSV or mzML: baseline, peak detection and integration, signal-to-noise, peak shape, resolution and linear calibration"
+version = "2.0.0"
+description = "GlyVAS (formerly LC-MS Data Processor): glycan quantitation from mzML tested against fluorescence, and transparent processing of LC-MS chromatograms"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Oluwaseun O. Ajayi", email = "oluwaseun.ajayi@uga.edu" }]

@@ -1,4 +1,4 @@
-# LC-MS Data Processor
+# GlyVAS (formerly LC-MS Data Processor)
 
 **Transparent processing of LC-MS chromatograms, from exported CSV traces or mzML files: baseline, peak detection and integration, signal-to-noise, peak shape, resolution and linear calibration.**
 
@@ -6,7 +6,9 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21652568.svg)](https://doi.org/10.5281/zenodo.21652568)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-LC-MS Data Processor reads a chromatogram saved as a CSV file with `time` and `intensity` columns (for example, an extracted-ion or total-ion chromatogram exported from vendor software) and runs a short, readable pipeline: baseline estimation, peak detection, integration, signal-to-noise, asymmetry and resolution checks, and linear calibration for quantification. Every step is a few lines of documented Python, so the processing can be inspected, taught and changed.
+**GlyVAS** (Glycan Validated Abundances from Spectra) is the new name of LC-MS Data Processor from version 2.0.0; the package name, commands and imports are unchanged. For labeled glycans, `lcms-batch` quantifies targets from mzML files over a grid of extraction windows, peak widths and baseline windows, and `lcms-compare` tests the result against the fluorescence trace stored in the same file and against Skyline. The target calculator (`glycan_targets`) covers the residues of N- and O-glycans, milk oligosaccharides and glycosaminoglycan disaccharides (Hex, HexNAc, dHex, NeuAc, NeuGc, hexuronic and unsaturated hexuronic acid, hexosamine, pentose, sulfate), the labels 2-AB, 2-AA, 2-aminoacridone, procainamide and RapiFluor-MS, and positive or negative ions. The validation on public released N-glycan data sets, with every result table and the script that regenerates each figure and number, is in [`paper/glycan-validation`](paper/glycan-validation).
+
+The general chromatogram workflow reads a chromatogram saved as a CSV file with `time` and `intensity` columns (for example, an extracted-ion or total-ion chromatogram exported from vendor software) and runs a short, readable pipeline: baseline estimation, peak detection, integration, signal-to-noise, asymmetry and resolution checks, and linear calibration for quantification. Every step is a few lines of documented Python, so the processing can be inspected, taught and changed.
 
 From version 1.2.0 it also reads mzML through [pyOpenMS](https://pyopenms.readthedocs.io/) and extracts total-ion and extracted-ion chromatograms (XICs) with a ppm window, so open-format instrument data can go straight into the same pipeline.
 
@@ -111,7 +113,7 @@ Bug reports, questions and pull requests are welcome; see [CONTRIBUTING.md](CONT
 
 ## Citation
 
-Ajayi, O. O. (2026). *LC-MS Data Processor*. Zenodo. https://doi.org/10.5281/zenodo.21652568 (see `CITATION.cff`).
+Ajayi, O. O. (2026). *GlyVAS (formerly LC-MS Data Processor)*. Zenodo. https://doi.org/10.5281/zenodo.21652568 (all versions; see `CITATION.cff`).
 
 ## License
 

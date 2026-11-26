@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.0.0 (2026-11)
+
+### Changed
+- Renamed to GlyVAS (Glycan Validated Abundances from Spectra). The package name `lcms-data-processor`, the commands and the imports are unchanged.
+- `PeakDetector.detect_peaks(height_fraction=...)`: the height floor is a parameter (default 0.05, as before); `lcms-compare fld` sets it equal to the fluorescence prominence threshold so that small fluorescence peaks are not dropped.
+- Fluorescence coverage is the matched fluorescence area as a percentage of the baseline-corrected area of the whole glycan region.
+
+### Added
+- `glycan_targets`: RapiFluor-MS label (urea linkage, +C17H21N5O), 2-aminoacridone label, residues for glycosaminoglycan disaccharides and other classes (HexA, DeltaHexA, HexN, Pent, Sulfo; short codes A, U, Hn, P, Su) and deprotonated ions (adduct `-H`).
+- `cluster/pride_files.py` and job files for the RapiFluor-MS data set PXD078897 (conversion with ThermoRawFileParser, quantitation, diagnostics, converter check).
+- `paper/glycan-validation/`: `combine_replicates.py` (per-glycan bias with confidence intervals, variance components, cross-day calibration, settings sensitivity), `transfer_test.py` (calibration within protein and between sequences), `diag_windows.py`, `xic_pair.py`, `converter_check.py`, the result tables, and `make_figures.py`, which regenerates every figure and number of the paper.
+- Tests for the RapiFluor-MS label, the fluorescence peak threshold and residue masses of other glycan classes (67 tests).
+
+### Removed
+- `paper/glycan-validation/make_toc.py` (the TOC graphic is written by `make_figures.py`).
+
 ## 1.4.0 (2026-11)
 
 ### Added
