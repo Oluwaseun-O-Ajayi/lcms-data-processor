@@ -1,6 +1,6 @@
-# Contributing to LC-MS Data Processor
+# Contributing to GlyVAS
 
-Thank you for your interest in improving LC-MS Data Processor.
+Thank you for your interest in improving GlyVAS.
 
 ## Reporting bugs and asking questions
 

@@ -5,8 +5,8 @@ settings: 72
 largest per-glycan range over >=5 ppm settings: 1.29 points (A3G3S2_late)
 FLD delay 1.9 s
 default setting (10 ppm, width 5, bw 0.1): MAD 2.71, max |d| 5.81, LoA +/-6.48, r 0.955
-LC-MS Data Processor vs Skyline: MAD 0.55, max 1.20, LoA +/-1.47, r 0.998
-LC-MS Data Processor vs fluorescence: MAD 2.71, max 5.81, LoA +/-6.48, r 0.955
+GlyVAS vs Skyline: MAD 0.55, max 1.20, LoA +/-1.47, r 0.998
+GlyVAS vs fluorescence: MAD 2.71, max 5.81, LoA +/-6.48, r 0.955
 Skyline vs fluorescence: MAD 2.43, max 4.61, LoA +/-5.68, r 0.965
 2-AB mass error 2+: n 8, mean +1.24, range -0.13 to +2.00 ppm
 2-AB mass error 3+: n 8, mean +2.88, range +1.42 to +4.02 ppm

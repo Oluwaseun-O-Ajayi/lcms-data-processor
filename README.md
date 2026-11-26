@@ -1,6 +1,6 @@
 # GlyVAS
 
-**Transparent processing of LC-MS chromatograms, from exported CSV traces or mzML files: baseline, peak detection and integration, signal-to-noise, peak shape, resolution and linear calibration.**
+**Glycan quantitation from mzML tested against fluorescence from the same injection, and transparent processing of LC-MS chromatograms from CSV traces or mzML files: baseline, peak detection and integration, signal-to-noise, peak shape, resolution and linear calibration.**
 
 [![tests](https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor/actions/workflows/tests.yml/badge.svg)](https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor/actions/workflows/tests.yml)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21652568.svg)](https://doi.org/10.5281/zenodo.21652568)

@@ -1,6 +1,6 @@
 """
 From mzML to quantified peaks: extract ion chromatograms with pyOpenMS and
-integrate them with LC-MS Data Processor.
+integrate them with GlyVAS.
 
 Runs on the synthetic file written by examples/make_mzml_example.py, whose true
 peak areas are known, and prints recovered areas for a 10 ppm and a 50 ppm

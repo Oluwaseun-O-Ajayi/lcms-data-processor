@@ -88,8 +88,8 @@ s = sk.groupby("Molecule").Area.sum()
 s = 100 * s / s.sum()
 t = pd.DataFrame({"skyline": s, "ours": pg.set_index("glycan").ms_pct, "fld": pg.set_index("glycan").fld_pct})
 table1 = []
-for a, b, lab in [("ours", "skyline", "LC-MS Data Processor vs Skyline"),
-                  ("ours", "fld", "LC-MS Data Processor vs fluorescence"),
+for a, b, lab in [("ours", "skyline", "GlyVAS vs Skyline"),
+                  ("ours", "fld", "GlyVAS vs fluorescence"),
                   ("skyline", "fld", "Skyline vs fluorescence")]:
     dd = t[a] - t[b]
     row = dict(comparison=lab, n=len(dd), mean_abs_diff=dd.abs().mean(), max_abs_diff=dd.abs().max(),

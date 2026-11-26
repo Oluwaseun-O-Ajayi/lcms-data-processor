@@ -1,4 +1,4 @@
-"""Accuracy tests for LC-MS Data Processor on synthetic chromatograms with known answers."""
+"""Accuracy tests for GlyVAS on synthetic chromatograms with known answers."""
 
 import os
 import subprocess

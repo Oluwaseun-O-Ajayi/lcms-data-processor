@@ -1,7 +1,7 @@
 """
 Basic LC-MS Analysis Example
 
-Demonstrates basic usage of the LC-MS Data Processor toolkit.
+Demonstrates basic usage of the GlyVAS toolkit.
 """
 
 import sys
