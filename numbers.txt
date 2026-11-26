@@ -1,0 +1,76 @@
+== 2-AB fetuin (FET-2AB-CRL)
+settings: 72
+>=5 ppm (60 settings): MAD 2.64-3.16 points, r 0.944-0.957
+2 ppm (12 settings): MAD 5.89-7.39, species matched 5-7 of 8
+largest per-glycan range over >=5 ppm settings: 1.29 points (A3G3S2_late)
+FLD delay 1.9 s
+default setting (10 ppm, width 5, bw 0.1): MAD 2.71, max |d| 5.81, LoA +/-6.48, r 0.955
+LC-MS Data Processor vs Skyline: MAD 0.55, max 1.20, LoA +/-1.47, r 0.998
+LC-MS Data Processor vs fluorescence: MAD 2.71, max 5.81, LoA +/-6.48, r 0.955
+Skyline vs fluorescence: MAD 2.43, max 4.61, LoA +/-5.68, r 0.965
+2-AB mass error 2+: n 8, mean +1.24, range -0.13 to +2.00 ppm
+2-AB mass error 3+: n 8, mean +2.88, range +1.42 to +4.02 ppm
+ion set H234Na, 10 ppm: MAD 2.62
+ion set H234Na, 20 ppm: MAD 2.69
+ion set H234Na, 50 ppm: MAD 2.87
+ion set H234Na, 5 ppm: MAD 2.82
+ion set H234, 10 ppm: MAD 2.71
+ion set H234, 20 ppm: MAD 2.81
+ion set H234, 50 ppm: MAD 2.89
+ion set H234, 5 ppm: MAD 2.85
+ion set H23, 10 ppm: MAD 2.71
+ion set H23, 20 ppm: MAD 2.83
+ion set H23, 50 ppm: MAD 2.90
+ion set H23, 5 ppm: MAD 2.85
+MS/FLD by antennae, NeuAc: 2.0-ant 1.0 NeuAc 1.46; 2.0-ant 2.0 NeuAc 1.80; 3.0-ant 1.0 NeuAc 1.33; 3.0-ant 2.0 NeuAc 0.99; 3.0-ant 3.0 NeuAc 0.85; 3.0-ant 4.0 NeuAc 0.59
+
+== Procainamide runs
+FET-ProA-S1: all ions n 16 median -5.2; ions with >= 20 centroids n 11, median -5.2, range -10.7 to +1.2 ppm
+FET-ProA-S2: all ions n 17 median -7.9; ions with >= 20 centroids n 12, median -7.7, range -12.5 to -2.2 ppm
+TFN-ProA: all ions n 22 median -6.7; ions with >= 20 centroids n 11, median -6.4, range -10.3 to +0.8 ppm
+DEX-ProA: all ions n 26 median -4.1; ions with >= 20 centroids n 9, median -6.6, range -13.8 to -0.0 ppm
+all glycan ions >= 20 centroids: n 34, median -6.7, 32 of 34 negative, 4 beyond 10 ppm
+2-AB ions (2+/3+): n 16, all within -0.13 to +4.02 ppm
+FET-ProA-S1: largest change between consecutive windows: 10->20 20.9 (A3G3S2), 20->30 8.4 (A3G3), 30->50 8.7 (A3G3); 10->50 22.4
+FET-ProA-S1 ±10 ppm: 0.81 NeuAc per glycan, asialo 39.7%, A2G2 31.3, A3G3 8.4, A3G3S1 42.8, A3G3S2 8.0
+FET-ProA-S1 ±20 ppm: 1.17 NeuAc per glycan, asialo 24.6%, A2G2 15.0, A3G3 9.6, A3G3S1 35.0, A3G3S2 28.9
+FET-ProA-S1 ±30 ppm: 0.99 NeuAc per glycan, asialo 30.3%, A2G2 12.4, A3G3 17.9, A3G3S1 38.1, A3G3S2 21.6
+FET-ProA-S1 ±50 ppm: 0.89 NeuAc per glycan, asialo 35.6%, A2G2 8.9, A3G3 26.7, A3G3S1 36.5, A3G3S2 17.5
+FET-ProA-S2: largest change between consecutive windows: 10->20 6.1 (A3G3S2), 20->30 3.7 (A3G3S2), 30->50 2.7 (A3G3S2); 10->50 7.1
+FET-ProA-S2 ±10 ppm: 0.73 NeuAc per glycan, asialo 41.4%, A2G2 12.9, A3G3 28.5, A3G3S1 43.0, A3G3S2 8.9
+FET-ProA-S2 ±20 ppm: 0.81 NeuAc per glycan, asialo 38.0%, A2G2 7.2, A3G3 30.8, A3G3S1 38.1, A3G3S2 14.9
+FET-ProA-S2 ±30 ppm: 0.90 NeuAc per glycan, asialo 35.1%, A2G2 7.7, A3G3 27.4, A3G3S1 36.7, A3G3S2 18.6
+FET-ProA-S2 ±50 ppm: 0.86 NeuAc per glycan, asialo 35.9%, A2G2 7.7, A3G3 28.2, A3G3S1 38.3, A3G3S2 16.0
+largest |S2 - S1| by window: ±10 20.0 (A3G3), ±20 21.3 (A3G3), ±30 9.4 (A3G3), ±50 1.9 (A3G3S1)
+TFN-ProA: largest change between consecutive windows: 10->20 14.1 (A2G2), 20->30 16.2 (A2G2S1), 30->50 5.5 (A2G2S1)
+TFN-ProA A2G2S1: ±10 41.6, ±20 55.5, ±30 39.3, ±50 33.8
+TFN-ProA A2G2: ±10 29.0, ±20 14.9, ±30 30.9, ±50 34.3
+TFN-ProA A2G2S2: ±10 3.4, ±20 2.2, ±30 4.7, ±50 7.7
+TFN-ProA A2G2 2+ area by window: ±10 2.16e+05, ±20 2.28e+05, ±30 8.16e+05, ±50 1.09e+06
+QC: included signal 6.93e+07-2.51e+08, ACN ratio 0.048-0.200; excluded signal 8.49e+04-4.03e+06, ACN ratio 0.493-8.285; gap 17.2-fold; 2-AB signal max 0.0
+
+== RapiFluor-MS, MS154 trastuzumab (9 runs, 3 days)
+pooled: n 54, MAD 0.599, LoA +/-1.353, r 0.9991
+response factor, mean of 9 runs: Man5 0.667, G0 0.880, G0F 0.987, G1F_a 1.034, G1F_b 1.017, G2F 1.089
+response factor range over days: Man5 0.645-0.684, G0 0.868-0.888, G0F 0.981-0.992, G1F_a 1.022-1.041, G1F_b 1.013-1.022, G2F 1.084-1.094
+bias [95% CI]: Man5 -0.63 [-0.67, -0.59], G0 -0.54 [-0.60, -0.49], G0F -0.62 [-0.93, -0.31], G1F_a +1.02 [0.75, 1.30], G1F_b +0.17 [0.11, 0.23], G2F +0.60 [0.52, 0.68]
+settings: mean MAD over runs 0.595-0.634 across 12 settings
+cross-day calibration: MAD 0.599 -> 0.189; by training day after 0.172-0.214; LoA half-width 1.32-1.59 -> 0.51-0.64
+MS119 Afli: n 14, MAD 1.615, LoA +/-4.750, coverage 95.0%
+MS119 Cetux: n 11, MAD 2.038, LoA +/-6.052, coverage 89.7%
+MS119 Trast: n 7, MAD 0.376, LoA +/-0.854, coverage 98.2%
+within protein, Afli: MAD 1.615 -> 0.326, LoA 4.75 -> 1.24
+within protein, Cetux: MAD 2.038 -> 2.478, LoA 6.05 -> 7.51
+within protein, Trast: MAD 0.376 -> 0.091, LoA 0.85 -> 0.26
+transfer from MS154, Afli: MAD 3.670 -> 5.275, LoA 9.89 -> 15.05
+transfer from MS154, Cetux: MAD 0.586 -> 0.665, LoA 1.62 -> 1.84
+transfer from MS154, Trast: MAD 0.352 -> 0.591, LoA 0.81 -> 1.66
+MS119 Trast: 3 runs, MS/FLD summed area 2.86, replicate CV of relative abundance MS max 1.5%, FLD max 0.6%
+MS119 Afli: 3 runs, MS/FLD summed area 7.10, replicate CV of relative abundance MS max 8.9%, FLD max 2.5%
+MS119 Cetux: 3 runs, MS/FLD summed area 0.55, replicate CV of relative abundance MS max 69.8%, FLD max 4.9%
+isomer pair MS154 trastuzumab: FLD late/early 0.342
+isomer pair MS154 trastuzumab: MS late/early 0.339
+isomer pair MS119 trastuzumab: FLD late/early 0.342
+isomer pair MS119 trastuzumab: MS late/early 0.370
+isomer pair MS119 aflibercept: FLD late/early 0.291
+isomer pair MS119 aflibercept: MS late/early 0.403
