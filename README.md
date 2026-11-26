@@ -36,7 +36,7 @@ On simulated Gaussian peaks on a drifting baseline, the mean recovered area is w
 
 ## Installation
 
-Requires Python 3.9 or later.
+Requires Python 3.10 or later.
 
 ```bash
 git clone https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor.git

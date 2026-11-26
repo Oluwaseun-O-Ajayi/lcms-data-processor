@@ -9,7 +9,7 @@ description = "GlyVAS (formerly LC-MS Data Processor): glycan quantitation from 
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Oluwaseun O. Ajayi", email = "oluwaseun.ajayi@uga.edu" }]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = ["numpy>=1.23", "pandas>=1.5", "matplotlib>=3.6", "scipy>=1.9"]
 classifiers = [
   "Intended Audience :: Science/Research",

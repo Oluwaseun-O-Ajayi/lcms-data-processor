@@ -4,6 +4,7 @@
 
 ### Changed
 - Renamed to GlyVAS (Glycan Validated Abundances from Spectra). The package name `lcms-data-processor`, the commands and the imports are unchanged.
+- Requires Python 3.10 or later (Python 3.9 reached end of life in October 2025 and is no longer available on the Ubuntu test runner).
 - `PeakDetector.detect_peaks(height_fraction=...)`: the height floor is a parameter (default 0.05, as before); `lcms-compare fld` sets it equal to the fluorescence prominence threshold so that small fluorescence peaks are not dropped.
 - Fluorescence coverage is the matched fluorescence area as a percentage of the baseline-corrected area of the whole glycan region.
 
