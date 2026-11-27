@@ -21,6 +21,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 
+import snfg  # noqa: E402  (SNFG cartoons; same folder)
+
 HERE = Path(__file__).resolve().parent
 D2, DP, OUT = HERE / "data" / "fetuin_2AB", HERE / "data" / "procainamide", HERE / "figures"
 DT, DM = HERE / "data" / "trastuzumab_RFMS", HERE / "data" / "ms119_transfer"
@@ -31,7 +33,7 @@ plt.rcParams.update({
     "font.size": 8, "axes.titlesize": 8, "axes.labelsize": 8, "xtick.labelsize": 7, "ytick.labelsize": 7,
     "legend.fontsize": 7, "axes.spines.top": False, "axes.spines.right": False, "axes.linewidth": 0.6,
     "xtick.major.width": 0.6, "ytick.major.width": 0.6, "xtick.major.size": 3, "ytick.major.size": 3,
-    "lines.linewidth": 1.4, "savefig.dpi": 600, "pdf.fonttype": 42, "ps.fonttype": 42})
+    "lines.linewidth": 1.4, "mathtext.default": "regular", "savefig.dpi": 600, "pdf.fonttype": 42, "ps.fonttype": 42})
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#d9d8d4"
 CAT = ["#2a78d6", "#eb6834", "#1baf7a"]
 SEQ = {1: "#a9cbf2", 2: "#5f9ee6", 3: "#2a78d6", 4: "#164a8a"}
@@ -353,7 +355,7 @@ save(fig, "FigureS1_synthetic_window_benchmark")
 
 # ------------------------------------------------------------------ RapiFluor-MS data set (PXD078897)
 GLY = ["Man5", "G0", "G0F", "G1F_a", "G1F_b", "G2F"]  # in order of mass
-GLAB = {"Man5": "Man5", "G0": "G0", "G0F": "G0F", "G1F_a": "G1F (early)", "G1F_b": "G1F (late)", "G2F": "G2F", "G1": "G1a"}
+GLAB = {"Man5": "Man5", "G0": "G0", "G0F": "G0F", "G1F_a": "G1F$_{a}$", "G1F_b": "G1F$_{b}$", "G2F": "G2F", "G1": "G1a"}
 DAYM = {1: "o", 2: "s", 3: "^"}
 pr = pd.read_csv(DT / "per_run_per_glycan.csv")
 say("\n== RapiFluor-MS, MS154 trastuzumab (9 runs, 3 days)")
@@ -434,7 +436,7 @@ fig1.tight_layout(w_pad=1.6)
 save(fig1, "Figure1_processing_settings")
 
 # Figure 2: MS154 agreement
-fig, (a, b, c) = plt.subplots(1, 3, figsize=(7.0, 2.6), gridspec_kw={"width_ratios": [1.05, 1.15, 1]})
+fig, (a, b, c) = plt.subplots(1, 3, figsize=(7.0, 2.8), gridspec_kw={"width_ratios": [1.3, 1.0, 0.95]})
 y = np.arange(len(GLY))[::-1]
 a.axvline(0, color=INK2, lw=0.6)
 a.hlines(y, bias.lo, bias.hi, color=INK, lw=1.6)
@@ -445,7 +447,6 @@ a.set_xlabel("MS − FLD (points), mean and 95% CI")
 a.set_xlim(-1.2, 1.5)
 a.xaxis.grid(True, color=GRID, lw=0.5)
 a.set_axisbelow(True)
-tag(a, "A", x=-0.38)
 mean_ = (pr.ms_pct + pr.fld_pct) / 2
 loa = 1.96 * dd.std(ddof=1)
 for k, (day, g) in enumerate(pr.groupby("day")):
@@ -471,7 +472,7 @@ for k, day in enumerate(sorted(rf_day.columns)):
     c.plot(xg + (k - 1) * 0.18, rf_day[day].values, DAYM[day], color=CAT[k], ms=4.2, mec="white", mew=0.5, ls="",
            label=f"Day {day}")
 c.set_xticks(xg)
-c.set_xticklabels([GLAB[g].replace(" (", "\n(") for g in GLY], fontsize=6.3)
+c.set_xticklabels([GLAB[g] for g in GLY], fontsize=6.5)
 c.set_ylabel("Response factor (MS% / FLD%)")
 c.set_ylim(0.55, 1.2)
 c.yaxis.grid(True, color=GRID, lw=0.5)
@@ -479,6 +480,29 @@ c.set_axisbelow(True)
 c.legend(frameon=False, loc="lower right", fontsize=6.3, handletextpad=0.1)
 tag(c, "C")
 fig.tight_layout(w_pad=1.4)
+# SNFG cartoons to the left of the glycan names in panel A (reducing ends aligned)
+UNIT, XL, YL = 0.095, (-6.7, 0.75), (-1.35, 1.6)
+fw, fh = fig.get_size_inches()
+cw, ch = (XL[1] - XL[0]) * UNIT / fw, (YL[1] - YL[0]) * UNIT / fh
+fig.canvas.draw()
+inv = fig.transFigure.inverted()
+boxes = [inv.transform(lab.get_window_extent()) for lab in a.get_yticklabels()]
+lw_ = max(bb[1, 0] - bb[0, 0] for bb in boxes)
+a.set_yticklabels([])
+pa = a.get_position()
+x_cart = 0.012
+x_text = x_cart + cw + 0.006
+x_axis = x_text + lw_ + 0.012
+a.set_position([x_axis, pa.y0, pa.x1 - x_axis, pa.height])
+for yy, g in zip(y, GLY):
+    yc = inv.transform(a.transData.transform((0, yy)))[1]
+    ax_ = fig.add_axes([x_cart, yc - ch / 2, cw, ch])
+    snfg.draw(ax_, g)
+    ax_.set_xlim(*XL)
+    ax_.set_ylim(*YL)
+    ax_.axis("off")
+    fig.text(x_text, yc, GLAB[g], fontsize=7, ha="left", va="center", color=INK)
+fig.text(0.005, pa.y1 + 0.03, "A", fontsize=10, fontweight="bold", va="bottom", color=INK)
 save(fig, "Figure2_ms154_agreement")
 
 # Figure 3: calibration tests
@@ -558,7 +582,7 @@ t1 = fig.add_axes([0.12, 0.27, 0.36, 0.5])
 t1.bar(range(len(GLY)), rf_all.values, color=CAT[0], width=0.65)
 t1.axhline(1, color=INK2, lw=0.7, ls="--")
 t1.set_xticks(range(len(GLY)))
-t1.set_xticklabels([GLAB[g].replace(" (early)", "a").replace(" (late)", "b") for g in GLY], fontsize=5.5, rotation=40, ha="right", rotation_mode="anchor")
+t1.set_xticklabels([GLAB[g] for g in GLY], fontsize=5.5, rotation=40, ha="right", rotation_mode="anchor")
 t1.set_ylim(0.5, 1.15)
 t1.set_ylabel("MS / FLD", fontsize=6)
 t1.tick_params(labelsize=5.5)

@@ -8,6 +8,8 @@ python paper/glycan-validation/make_figures.py
 
 which writes `figures/` (Figures 1–3 and S1–S4 as PNG and PDF, and the TOC graphic as PNG, PDF and TIF), `numbers.txt`
 (all quoted values), `table1_agreement.csv` and `tableS_skyline_per_glycan.csv`.
+Glycan structures in Figure 2 and in Table S1 of the Supporting Information are drawn by `snfg.py` in the Symbol
+Nomenclature for Glycans (SNFG).
 
 ## Data
 

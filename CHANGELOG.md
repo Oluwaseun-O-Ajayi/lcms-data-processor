@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `paper/glycan-validation/snfg.py`: glycan cartoons in the Symbol Nomenclature for Glycans (SNFG), drawn with matplotlib. Figure 2A shows the structures beside the glycan names, and isomer names use subscripts (G1F_a, G1F_b) in Figure 2 and the TOC graphic. Numbers are unchanged.
+
 ## 2.0.0 (2026-11)
 
 ### Changed
