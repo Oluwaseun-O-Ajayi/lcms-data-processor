@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lcms-data-processor"
-version = "2.0.0"
+version = "2.0.1"
 description = "GlyVAS (formerly LC-MS Data Processor): glycan quantitation from mzML tested against fluorescence, and transparent processing of LC-MS chromatograms"
 readme = "README.md"
 license = { text = "MIT" }

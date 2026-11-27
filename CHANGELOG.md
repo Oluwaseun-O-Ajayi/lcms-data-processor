@@ -1,9 +1,12 @@
 # Changelog
 
-## Unreleased
+## 2.0.1 (2026-11)
 
 ### Added
 - `paper/glycan-validation/snfg.py`: glycan cartoons in the Symbol Nomenclature for Glycans (SNFG), drawn with matplotlib. Figure 2A shows the structures beside the glycan names, and isomer names use subscripts (G1F_a, G1F_b) in Figure 2 and the TOC graphic. Numbers are unchanged.
+
+### Fixed
+- Procainamide run manifest (`cluster/procA_qc.py`, `data/procainamide/manifest.csv`, `qc_summary.csv`): run TFN-ProA-X1 is labeled bovine transferrin (previously "Transferrin (BTferin)").
 
 ## 2.0.0 (2026-11)
 

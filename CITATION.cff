@@ -10,9 +10,9 @@ authors:
     affiliation: "University of Georgia"
     orcid: "https://orcid.org/0000-0003-0040-7217"
 
-version: "2.0.0"
+version: "2.0.1"
 doi: "10.5281/zenodo.21652568"
-date-released: "2026-11-26"
+date-released: "2026-11-27"
 
 url: "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"
 repository-code: "https://github.com/Oluwaseun-O-Ajayi/lcms-data-processor"

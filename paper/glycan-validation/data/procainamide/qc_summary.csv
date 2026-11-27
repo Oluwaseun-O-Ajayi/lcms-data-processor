@@ -12,5 +12,5 @@ FET-ProA-X3,Bovine fetuin,procainamide,2024-06-11-21.26.01-BFet052824[result].d,
 FET-ProA-X4,Bovine fetuin,procainamide,2024-04-11-20.22.16-Fet-ca[result].d,excluded,Low labeled signal; acetonitrile series dominant,1239091.0,294254.0,8965495.0,0.0,7.236,fail
 FET-ProA-X5,Bovine fetuin,procainamide,2024-04-11-23.46.26-Fet-cb[result].d,excluded,Low labeled signal; acetonitrile series dominant,1189445.0,351374.0,9854682.0,0.0,8.285,fail
 FET-ProA-X6,Bovine fetuin,procainamide,2024-04-12-03.10.33-Fet-cc[result].d,excluded,Low labeled signal,84907.0,56350.0,190722.0,0.0,2.246,fail
-TFN-ProA-X1,Transferrin (BTferin),procainamide,2024-05-22-01.39.06-BTferin052124[result].d,excluded,Low labeled signal,1873940.0,938601.0,1552211.0,0.0,0.828,fail
+TFN-ProA-X1,Bovine transferrin,procainamide,2024-05-22-01.39.06-BTferin052124[result].d,excluded,Low labeled signal,1873940.0,938601.0,1552211.0,0.0,0.828,fail
 FET-2AB-CRL,Bovine fetuin,2-AB,MASOP00220_AB_CRL_07JAN2021_Fetuin_001 (public),included,Public 2-AB data with fluorescence trace,,,,,,

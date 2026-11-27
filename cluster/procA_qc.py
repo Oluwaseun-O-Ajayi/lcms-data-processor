@@ -65,7 +65,7 @@ MANIFEST = [
      'Low labeled signal; acetonitrile series dominant'),
     ('Fet-cc', 'FET-ProA-X6', '2024-04-12-03.10.33-Fet-cc[result].d', 'Bovine fetuin', 'excluded',
      'Low labeled signal'),
-    ('BTferin052124', 'TFN-ProA-X1', '2024-05-22-01.39.06-BTferin052124[result].d', 'Transferrin (BTferin)',
+    ('BTferin052124', 'TFN-ProA-X1', '2024-05-22-01.39.06-BTferin052124[result].d', 'Bovine transferrin',
      'excluded', 'Low labeled signal'),
 ]
 
