@@ -8,6 +8,9 @@
 ### Fixed
 - Procainamide run manifest (`cluster/procA_qc.py`, `data/procainamide/manifest.csv`, `qc_summary.csv`): run TFN-ProA-X1 is labeled bovine transferrin (previously "Transferrin (BTferin)").
 
+### Changed
+- README subtitle describes the glycan validation; the remaining "LC-MS Data Processor" labels in CONTRIBUTING.md, the examples, a test docstring, `numbers.txt` and `table1_agreement.csv` now read GlyVAS. Values are unchanged.
+
 ## 2.0.0 (2026-11)
 
 ### Changed
