@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 
-title: "GlyVAS"
+title: "GlyVAS: Glycan Validated Abundances from Spectra"
 
 authors:
   - family-names: "Ajayi"
